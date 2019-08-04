@@ -1,0 +1,157 @@
+# see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#serviceaccount-v1-core
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: example-go-info
+imagePullSecrets:
+  - name: pandora-rancher-test-5000
+---
+# see https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#role-v1-rbac-authorization-k8s-io
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-read
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+# see https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#rolebinding-v1-rbac-authorization-k8s-io
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: example-go-info-pod-read
+subjects:
+  - kind: ServiceAccount
+    name: example-go-info
+roleRef:
+  kind: Role
+  name: pod-read
+  apiGroup: rbac.authorization.k8s.io
+---
+# see https://kubernetes.io/docs/concepts/services-networking/ingress/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#ingress-v1beta1-networking-k8s-io
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: example-go-info
+spec:
+  rules:
+    - host: xip.io # with xip.io rancher will automatically generate an url alike example-go-info.default.10.1.0.3.xip.io.
+      http:
+        paths:
+          - backend:
+              serviceName: example-go-info
+              servicePort: 8000
+---
+# see https://kubernetes.io/docs/concepts/services-networking/service/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#service-v1-core
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-go-info
+spec:
+  selector:
+    app: example-go-info
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+---
+# see https://kubernetes.io/docs/concepts/configuration/secret/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#secret-v1-core
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: example-go-info-secrets
+stringData:
+  username: ali.baba
+  password: Open Sesame
+---
+# see https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#configmap-v1-core
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-go-info-configs
+data:
+  example-config-a.toml: |
+    # a comment
+    [table1]
+    name = "example-config-a"
+
+    [table2]
+    key = "string value"
+  example-config-b.toml: |
+    # a comment
+    [table1]
+    name = "example-config-b"
+
+    [table2]
+    key = "string value"
+---
+# see https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+# see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#daemonset-v1-apps
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: example-go-info
+spec:
+  selector:
+    matchLabels:
+      app: example-go-info
+  template:
+    metadata:
+      labels:
+        app: example-go-info
+    spec:
+      serviceAccountName: example-go-info
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+      containers:
+        - name: go-info
+          image: pandora.rancher.test:5000/go-info:1.0.0
+          resources:
+            requests:
+              memory: 20Mi
+              cpu: 0.1
+            limits:
+              memory: 20Mi
+              cpu: 0.1
+          env:
+            # see https://github.com/kubernetes/kubernetes/blob/master/test/e2e/common/downward_api.go
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: secrets
+              readOnly: true
+              mountPath: /var/run/secrets/example
+            - name: configs
+              readOnly: true
+              mountPath: /var/run/configs/example
+      volumes:
+        - name: secrets
+          secret:
+            secretName: example-go-info-secrets
+            defaultMode: 0400
+        - name: configs
+          configMap:
+            name: example-go-info-configs
+            defaultMode: 0400
