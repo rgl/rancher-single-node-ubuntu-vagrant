@@ -253,3 +253,36 @@ echo "logging in the registry..."
 docker login $registry_host --username "$registry_username" --password-stdin <<EOF
 $registry_password
 EOF
+
+# enable the helm stable app catalog.
+echo 'enabling the Helm Stable app catalog...'
+catalog_response="$(wget -qO- \
+    --header 'Content-Type: application/json' \
+    --header "Authorization: Bearer $admin_api_token" \
+    --post-data '{
+        "type": "catalog",
+        "name": "helm",
+        "url": "https://kubernetes-charts.storage.googleapis.com/",
+        "branch": "master",
+        "kind": "helm"
+    }' \
+    "$rancher_server_url/v3/catalogs")"
+catalog_id="$(echo "$catalog_response" | jq -r '.id')"
+echo "waiting for the Helm Stable app catalog to be active..."
+previous_message=""
+while true; do
+    catalog_response="$(
+        wget -qO- \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $admin_api_token" \
+            "$rancher_server_url/v3/catalogs/$catalog_id")"
+    catalog_state="$(echo "$catalog_response" | jq -r .state)"
+    catalog_transitioning_message="$(echo "$catalog_response" | jq -r .transitioningMessage)"
+    message="app $catalog_id state: $catalog_state $catalog_transitioning_message"
+    if [ "$message" != "$previous_message" ]; then
+        previous_message="$message"
+        echo "$message"
+    fi
+    [ "$catalog_state" = 'active' ] && break
+    sleep .5
+done

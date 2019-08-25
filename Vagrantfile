@@ -10,6 +10,7 @@ config_docker_version = '5:19.03.1~3-0~ubuntu-bionic' # NB execute apt-cache mad
 config_rancher_version = 'v2.2.8'
 config_k8s_version = 'v1.14.6-rancher1-1'
 config_kubectl_version = '1.14.6-00' # NB execute apt-cache madison kubectl to known the available versions.
+config_nfs_client_provisioner_version = '1.2.6' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
 
 hosts = """
 127.0.0.1	localhost
@@ -53,6 +54,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision 'shell', path: 'provision-base.sh'
     config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-dns-server.sh', args: [config_pandora_ip_address, config_pandora_fqdn]
+    config.vm.provision 'shell', path: 'provision-nfs-server.sh', args: [config_pandora_ip_address, "#{config_server_ip_address}/24"]
     config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version]
     config.vm.provision 'shell', path: 'provision-registry.sh', args: [config_pandora_fqdn]
   end
@@ -72,6 +74,11 @@ Vagrant.configure(2) do |config|
       config_rancher_version,
       config_k8s_version,
       config_kubectl_version,
+    ]
+    config.vm.provision 'shell', path: 'provision-rancher-nfs-client.sh', args: [
+      config_server_fqdn,
+      config_pandora_fqdn,
+      config_nfs_client_provisioner_version,
     ]
     config.vm.provision 'shell', inline: '/vagrant/examples/go-info/build.sh "$*"', args: [config_pandora_fqdn]
     config.vm.provision 'shell', inline: '/vagrant/examples/go-info/deploy.sh'
