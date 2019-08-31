@@ -50,6 +50,8 @@ docker run -d \
     -v /opt/rancher/ssl/cert.pem:/etc/rancher/ssl/cert.pem:ro \
     -v /opt/rancher/ssl/key.pem:/etc/rancher/ssl/key.pem:ro \
     -v /opt/rancher/ssl/cacerts.pem:/etc/rancher/ssl/cacerts.pem:ro \
+    -e AUDIT_LEVEL=3 \
+    -v /opt/rancher/log/audit:/var/log/auditlog \
     "rancher/rancher:${rancher_version}"
 
 # wait for it to be ready.
