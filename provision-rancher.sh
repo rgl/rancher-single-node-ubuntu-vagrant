@@ -18,7 +18,6 @@ registry_password='vagrant'
 # add useful commands to the bash history.
 cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
-cat /etc/systemd/resolved.conf.d/dns_servers.conf
 docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf
 kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -it --rm test cat /etc/resolv.conf
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/resolv.conf
