@@ -19,7 +19,10 @@ cat >/etc/dnsmasq.d/local.conf <<EOF
 server=$default_dns_resolver
 EOF
 rm /etc/resolv.conf
-echo "nameserver 127.0.0.1" >/etc/resolv.conf
+cat >/etc/resolv.conf <<EOF
+nameserver 127.0.0.1
+search $(echo -n "$pandora_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')
+EOF
 systemctl restart dnsmasq
 
 # use it.
