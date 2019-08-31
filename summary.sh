@@ -22,9 +22,16 @@ docker ps --format '{{.Image}} {{.Names}}' | grep -v '/pause' | sort
 # kubernetes info.
 kubectl version --short
 kubectl cluster-info
+kubectl api-resources -o wide
 #kubectl get nodes -o wide
 #kubectl get pods --all-namespaces
 kubectl get all --all-namespaces
+
+# show the kubernetes system arguments.
+docker inspect kube-apiserver | jq -r '.[0].Args[]' | sed -E 's,(.+),    \1,g'
+docker inspect kube-scheduler | jq -r '.[0].Args[]' | sed -E 's,(.+),    \1,g'
+docker inspect kube-controller-manager | jq -r '.[0].Args[]' | sed -E 's,(.+),    \1,g'
+docker inspect kubelet | jq -r '.[0].Args[]' | sed -E 's,(.+),    \1,g'
 
 # rbac info.
 kubectl get serviceaccount --all-namespaces
