@@ -1,5 +1,5 @@
 # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#serviceaccount-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#serviceaccount-v1-core
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -8,7 +8,7 @@ imagePullSecrets:
   - name: pandora-rancher-test-5000
 ---
 # see https://kubernetes.io/docs/reference/access-authn-authz/rbac/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#role-v1-rbac-authorization-k8s-io
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#role-v1-rbac-authorization-k8s-io
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -19,7 +19,7 @@ rules:
     verbs: ["get", "list"]
 ---
 # see https://kubernetes.io/docs/reference/access-authn-authz/rbac/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#rolebinding-v1-rbac-authorization-k8s-io
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#rolebinding-v1-rbac-authorization-k8s-io
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -33,7 +33,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/ingress/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#ingress-v1beta1-networking-k8s-io
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#ingress-v1beta1-networking-k8s-io
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
@@ -48,7 +48,7 @@ spec:
               servicePort: 8000
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/service/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#service-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#service-v1-core
 apiVersion: v1
 kind: Service
 metadata:
@@ -63,7 +63,7 @@ spec:
       port: 8000
 ---
 # see https://kubernetes.io/docs/concepts/configuration/secret/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#secret-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#secret-v1-core
 apiVersion: v1
 kind: Secret
 type: Opaque
@@ -74,7 +74,7 @@ stringData:
   password: Open Sesame
 ---
 # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#configmap-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#configmap-v1-core
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -97,7 +97,7 @@ data:
 ---
 # see https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#daemonset-v1-apps
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#daemonset-v1-apps
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
