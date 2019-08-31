@@ -237,6 +237,9 @@ echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.l
 apt-get update
 apt-get install -y "kubectl=$kubectl_version"
 
+# install the bash completion script.
+kubectl completion bash >/etc/bash_completion.d/kubectl
+
 # register custom registry for all namespaces inside the created cluster Default project.
 registry_name="$(echo "$registry_host" | sed -E 's,[^a-z0-9],-,g')"
 echo "getting the $cluster_id cluster Default project..."
