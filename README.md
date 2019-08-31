@@ -23,6 +23,22 @@ Access the rancher server at https://server.rancher.test:8443 and login with the
 
 The docker registry is at https://pandora.rancher.test:5000.
 
+## DNS
+
+Make sure that all of the following commands return the IP address of our `pandora` dns server:
+
+```bash
+docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.1.0.2
+kubectl --namespace ingress-nginx \
+    exec \
+    $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \
+    cat /etc/resolv.conf # => nameserver 10.1.0.2
+kubectl --namespace ingress-nginx \
+    exec \
+    $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \
+    cat /etc/nginx/nginx.conf | grep resolver # => resolver 10.1.0.2 valid=30s;
+```
+
 ## References
 
 * https://rancher.com/docs/rancher/v2.x/en/troubleshooting/kubernetes-components/
