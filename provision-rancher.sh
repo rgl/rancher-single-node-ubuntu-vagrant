@@ -37,15 +37,19 @@ cp /vagrant/shared/tls/example-ca/$rancher_server_domain-key.pem /opt/rancher/ss
 #    non-standard ports for rancher server because the standard ones will
 #    be used by the ingress controller.
 echo "starting rancher..."
+install -d -m 700 /opt/rancher
+install -d -m 700 /opt/rancher/data
+install -d -m 700 /opt/rancher/log
+install -d -m 700 /opt/rancher/log/audit
 docker run -d \
     --restart=unless-stopped \
     --name rancher \
     -p 8080:80 \
     -p 8443:443 \
-    -v /opt/rancher:/var/lib/rancher \
-    -v /opt/rancher/ssl/cert.pem:/etc/rancher/ssl/cert.pem \
-	-v /opt/rancher/ssl/key.pem:/etc/rancher/ssl/key.pem \
-	-v /opt/rancher/ssl/cacerts.pem:/etc/rancher/ssl/cacerts.pem \
+    -v /opt/rancher/data:/var/lib/rancher \
+    -v /opt/rancher/ssl/cert.pem:/etc/rancher/ssl/cert.pem:ro \
+    -v /opt/rancher/ssl/key.pem:/etc/rancher/ssl/key.pem:ro \
+    -v /opt/rancher/ssl/cacerts.pem:/etc/rancher/ssl/cacerts.pem:ro \
     "rancher/rancher:${rancher_version}"
 
 # wait for it to be ready.
