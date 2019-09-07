@@ -40,7 +40,14 @@ metadata:
   name: example-go-info
 spec:
   rules:
-    - host: xip.io # with xip.io rancher will automatically generate an url alike example-go-info.default.10.1.0.3.xip.io.
+    # NB due to the external-dns controller this will automatically configure the external DNS server (installed
+    #    in the pandora box) based on this ingress rule.
+    #    see https://github.com/kubernetes-incubator/external-dns
+    # NB you can use any other host, but you have to make sure DNS resolves to one of k8s cluster IP addresses.
+    # NB you could also use xip.io to make rancher automatically generate a host alike example-go-info.default.10.1.0.3.xip.io.
+    # NB you can see the configured server names on the nginx ingress with:
+    #       kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/nginx/nginx.conf | grep 'server_name '
+    - host: example-go-info.rancher.test
       http:
         paths:
           - backend:

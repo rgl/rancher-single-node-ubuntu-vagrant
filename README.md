@@ -12,7 +12,7 @@ Launch the environment:
 vagrant up --provider=libvirt # or --provider=virtualbox
 ```
 
-Add the environment hosts to your machine `hosts` file:
+Configure your host DNS resolver to delegate the `rancher.test` domain to the `pandora` machine like described in this document. Or add the environment hosts to your machine `hosts` file:
 
 ```plain
 10.1.0.2 pandora.rancher.test
@@ -52,9 +52,71 @@ kubectl --namespace ingress-nginx \
     cat /etc/nginx/nginx.conf | grep resolver # => resolver 10.1.0.2 valid=30s;
 ```
 
+## Host DNS resolver
+
+To delegate the `rancher.test` zone to the kubernetes managed external dns server (running in pandora) you need to configure your system to delegate that DNS zone to the pandora DNS server, for that, you can configure your system to only use dnsmasq.
+
+For example, on my Ubuntu 18.04 Desktop, I have uninstalled `resolvconf`, disabled `NetworkManager`, and manually configured the network interfaces:
+
+```bash
+sudo su -l
+for n in NetworkManager NetworkManager-wait-online NetworkManager-dispatcher network-manager; do
+    systemctl mask --now $n
+done
+apt-get remove --purge resolvconf
+cat >/etc/network/interfaces <<'EOF'
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto enp3s0
+iface enp3s0 inet dhcp
+EOF
+reboot
+```
+
+Then, replaced `systemd-resolved` with `dnsmasq`:
+
+```bash
+sudo su -l
+apt-get install -y --no-install-recommends dnsutils dnsmasq
+systemctl mask --now systemd-resolved
+cat >/etc/dnsmasq.d/local.conf <<EOF
+no-resolv
+bind-interfaces
+interface=lo
+listen-address=127.0.0.1
+# delegate the rancher.test zone to the pandora DNS server IP address.
+server=/rancher.test/10.1.0.2
+# delegate to the Cloudflare/APNIC Public DNS IP addresses.
+# NB iif there's no entry in /etc/hosts.
+server=1.1.1.1
+server=1.0.0.1
+# delegate to the Google Public DNS IP addresses.
+# NB iif there's no entry in /etc/hosts.
+#server=8.8.8.8
+#server=8.8.4.4
+EOF
+rm /etc/resolv.conf
+cat >/etc/resolv.conf <<EOF
+nameserver 127.0.0.1
+EOF
+systemctl restart dnsmasq
+exit
+```
+
+Then start all the machines and test the DNS resolution:
+
+```bash
+vagrant up
+dig pandora.rancher.test
+dig example-go-info.rancher.test
+```
+
 ## References
 
 * https://rancher.com/docs/rancher/v2.x/en/troubleshooting/kubernetes-components/
 * https://github.com/rancher/quickstart
 * https://github.com/rancher/api-spec
 * https://kubernetes.io/docs/reference/kubectl/cheatsheet/
+* https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/
