@@ -18,6 +18,7 @@ apt-get install -y --no-install-recommends dnsutils dnsmasq
 systemctl stop systemd-resolved
 systemctl disable systemd-resolved
 cat >/etc/dnsmasq.d/local.conf <<EOF
+no-resolv
 bind-interfaces
 interface=eth1
 listen-address=$pandora_ip_address
