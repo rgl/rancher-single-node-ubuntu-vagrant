@@ -45,7 +45,7 @@ spec:
         paths:
           - backend:
               serviceName: example-go-info
-              servicePort: 8000
+              servicePort: http
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/service/
 # see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#service-v1-core
@@ -60,7 +60,8 @@ spec:
   ports:
     - name: http
       protocol: TCP
-      port: 8000
+      port: 80
+      targetPort: http
 ---
 # see https://kubernetes.io/docs/concepts/configuration/secret/
 # see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#secret-v1-core
@@ -98,6 +99,8 @@ data:
 # see https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 # see https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 # see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#daemonset-v1-apps
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#podtemplatespec-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#container-v1-core
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -118,6 +121,9 @@ spec:
       containers:
         - name: go-info
           image: pandora.rancher.test:5000/go-info:1.0.0
+          ports:
+            - name: http
+              containerPort: 8000
           resources:
             requests:
               memory: 20Mi
