@@ -96,14 +96,35 @@ table > tbody > tr:hover {
 </head>
 <body>
     <table>
+        <caption>HTTP Request</caption>
+        <tbody>
+            <tr><th>Request Line</th><td>{{.Request.RequestLine}}</td></tr>
+            <tr><th>Client Address</th><td>{{.Request.ClientAddress}}</td></tr>
+			<tr><th>Server Address</th><td>{{.Request.ServerAddress}}</td></tr>
+			<tr>
+				<th>Headers</th>
+				<td>
+					<table>
+						<caption>Headers</caption>
+						{{- range $name, $values := .Request.Headers}}
+						{{- range $values}}
+						<tr>
+							<th>{{$name}}</th>
+							<td>{{.}}</td>
+						</tr>
+						{{- end}}
+						{{- end}}
+					</table>
+				</td>
+			</tr>
+        </tbody>
+    </table>
+    <table>
         <caption>Properties</caption>
         <tbody>
             <tr><th>Pid</th><td>{{.Pid}}</td></tr>
             <tr><th>Uid</th><td>{{.Uid}}</td></tr>
             <tr><th>Gid</th><td>{{.Gid}}</td></tr>
-            <tr><th>Request</th><td>{{.Request}}</td></tr>
-            <tr><th>Client Address</th><td>{{.ClientAddress}}</td></tr>
-            <tr><th>Server Address</th><td>{{.ServerAddress}}</td></tr>
             <tr><th>Hostname</th><td>{{.Hostname}}</td></tr>
             <tr><th>Pod Containers</th><td>{{.PodContainers}}</td></tr>
             <tr><th>Cgroup</th><td>{{.Cgroup}}</td></tr>
@@ -157,6 +178,13 @@ type nameValuePair struct {
 	Value string
 }
 
+type requestData struct {
+	RequestLine string
+	ClientAddress string
+	ServerAddress string
+	Headers http.Header
+}
+
 type indexData struct {
 	Pid           int
 	Uid           int
@@ -165,9 +193,7 @@ type indexData struct {
 	Cgroup        string
 	MemoryLimit   string
 	MemoryUsage   string
-	Request       string
-	ClientAddress string
-	ServerAddress string
+	Request       requestData
 	Hostname      string
 	Os            string
 	Architecture  string
@@ -197,7 +223,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("%s %s%s\n", r.Method, r.Host, r.URL)
+		fmt.Printf("%s %s%s %s\n", r.Method, r.Host, r.URL, r.Proto)
 
 		if r.URL.Path != "/" {
 			http.Error(w, "Not Found", http.StatusNotFound)
@@ -303,9 +329,12 @@ func main() {
 			Cgroup:        string(cgroup),
 			MemoryLimit:   string(memoryLimit),
 			MemoryUsage:   string(memoryUsage),
-			Request:       fmt.Sprintf("%s %s%s", r.Method, r.Host, r.URL),
-			ClientAddress: r.RemoteAddr,
-			ServerAddress: r.Context().Value(http.LocalAddrContextKey).(net.Addr).String(),
+			Request:       requestData{
+				RequestLine: fmt.Sprintf("%s %s%s %s", r.Method, r.Host, r.URL, r.Proto),
+				ClientAddress: r.RemoteAddr,
+				ServerAddress: r.Context().Value(http.LocalAddrContextKey).(net.Addr).String(),
+				Headers: r.Header,
+			},
 			Hostname:      hostname,
 			Os:            runtime.GOOS,
 			Architecture:  runtime.GOARCH,
