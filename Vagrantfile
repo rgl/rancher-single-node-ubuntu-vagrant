@@ -8,6 +8,7 @@ config_server_ip_address = '10.1.0.3'
 config_admin_password = 'admin'
 config_docker_version = '5:19.03.1~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
 config_rancher_version = 'v2.2.8'
+config_rancher_cli_version = 'v2.2.0' # see https://github.com/rancher/cli/releases
 config_k8s_version = 'v1.15.3-rancher1-1'
 config_kubectl_version = '1.15.3-00' # NB execute apt-cache madison kubectl to known the available versions.
 config_nfs_client_provisioner_version = '1.2.6' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
@@ -72,6 +73,7 @@ Vagrant.configure(2) do |config|
       config_server_ip_address,
       config_admin_password,
       config_rancher_version,
+      config_rancher_cli_version,
       config_k8s_version,
       config_kubectl_version,
     ]

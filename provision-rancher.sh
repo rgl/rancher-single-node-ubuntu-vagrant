@@ -7,8 +7,10 @@ rancher_server_url="https://$rancher_server_domain:8443"
 rancher_ip_address="${1:-10.1.0.3}"; shift || true
 admin_password="${1:-admin}"; shift || true
 rancher_version="${1:-v2.2.8}"; shift || true
+rancher_cli_version="${1:-v2.2.0}"; shift || true
 k8s_version="${1:-v1.15.3-rancher1-1}"; shift || true
 kubectl_version="${1:-1.15.3-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 node_ip_address="$rancher_ip_address"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -240,6 +242,13 @@ apt-get install -y "kubectl=$kubectl_version"
 
 # install the bash completion script.
 kubectl completion bash >/etc/bash_completion.d/kubectl
+
+# install the rancher cli.
+echo "installing rancher cli..."
+wget -qO- "https://github.com/rancher/cli/releases/download/$rancher_cli_version/rancher-linux-amd64-$rancher_cli_version.tar.xz" \
+    | tar xJf - --strip-components 2
+mv rancher /usr/local/bin
+rancher login "$rancher_server_url" --token "$admin_api_token" --name 'example'
 
 # register custom registry for all namespaces inside the created cluster Default project.
 registry_name="$(echo "$registry_host" | sed -E 's,[^a-z0-9],-,g')"
