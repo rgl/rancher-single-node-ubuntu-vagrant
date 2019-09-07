@@ -284,6 +284,21 @@ docker login $registry_host --username "$registry_username" --password-stdin <<E
 $registry_password
 EOF
 
+# install the PowerDNS external-dns provider.
+# see https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/pdns.md
+# see https://github.com/kubernetes-incubator/external-dns/blob/master/docs/initial-design.md
+external_dns_namespace='default'
+kubectl apply --namespace "$external_dns_namespace" -f - <<EOF
+$(
+    cat /vagrant/external-dns-pdns.yaml \
+        | sed -E "s,@@namespace@@,$external_dns_namespace,g" \
+        | sed -E "s,@@pdns-server@@,http://$registry_domain:8081,g" \
+        | sed -E "s,@@pdns-api-key@@,vagrant,g" \
+        | sed -E "s,@@txt-owner-id@@,vagrant,g" \
+        | sed -E "s,@@domain-filter@@,$rancher_domain,g"
+)
+EOF
+
 # enable the helm stable app catalog.
 echo 'enabling the Helm Stable app catalog...'
 rancher catalog add --branch master helm https://kubernetes-charts.storage.googleapis.com/
