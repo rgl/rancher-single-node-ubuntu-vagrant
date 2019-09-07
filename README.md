@@ -23,6 +23,19 @@ Access the rancher server at https://server.rancher.test:8443 and login with the
 
 The docker registry is at https://pandora.rancher.test:5000.
 
+You can access the example cluster from the host with, e.g.:
+
+```bash
+export KUBECONFIG=$PWD/shared/admin.conf
+kubectl version --short
+kubectl cluster-info
+kubectl api-versions
+kubectl api-resources -o wide
+kubectl get namespaces
+kubectl get all --all-namespaces -o wide
+kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
+```
+
 ## DNS
 
 Make sure that all of the following commands return the IP address of our `pandora` dns server:

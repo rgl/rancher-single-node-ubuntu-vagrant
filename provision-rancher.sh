@@ -228,6 +228,8 @@ kubeconfig_response="$(
         "$rancher_server_url/v3/clusters/$cluster_id?action=generateKubeconfig")"
 install -d -m 700 ~/.kube
 echo "$kubeconfig_response" | jq -r .config >~/.kube/config
+# also save the kubectl configuration on the host, so we can access it there.
+cp ~/.kube/config /vagrant/shared/admin.conf
 
 # install kubectl.
 echo "installing kubectl $kubectl_version..."
