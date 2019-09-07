@@ -10,6 +10,7 @@ rancher_version="${1:-v2.2.8}"; shift || true
 rancher_cli_version="${1:-v2.2.0}"; shift || true
 k8s_version="${1:-v1.15.3-rancher1-1}"; shift || true
 kubectl_version="${1:-1.15.3-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+krew_version="${1:-v0.2.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 node_ip_address="$rancher_ip_address"
 registry_host="$registry_domain:5000"
@@ -18,6 +19,8 @@ registry_username='vagrant'
 registry_password='vagrant'
 
 # add useful commands to the bash history.
+# see https://kubernetes.github.io/ingress-nginx/kubectl-plugin/
+# see https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/
 cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
 docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf
@@ -25,6 +28,10 @@ kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -i
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/resolv.conf
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/nginx/nginx.conf | grep resolver
 kubectl --namespace ingress-nginx get pods
+# NB the backends, general, certs, and conf subcommands require ingress-nginx
+#    0.23.0+ BUT rancher 2.2.8 ships with 0.21.0.
+kubectl ingress-nginx lint --show-all --all-namespaces
+kubectl ingress-nginx ingresses --all-namespaces
 EOF
 
 # copy certificate.
@@ -242,6 +249,22 @@ apt-get install -y "kubectl=$kubectl_version"
 
 # install the bash completion script.
 kubectl completion bash >/etc/bash_completion.d/kubectl
+
+# install the krew kubectl package manager.
+echo "installing the krew $krew_version kubectl package manager..."
+wget -qO- "https://storage.googleapis.com/krew/$krew_version/krew.tar.gz" | tar xzf - ./krew-linux_amd64
+wget -q "https://storage.googleapis.com/krew/$krew_version/krew.yaml"
+./krew-linux_amd64 install --manifest=krew.yaml
+cat >/etc/profile.d/krew.sh <<'EOF'
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+EOF
+source /etc/profile.d/krew.sh
+kubectl krew version
+
+# install the ingress-nginx kubectl plugin.
+# see https://kubernetes.github.io/ingress-nginx/kubectl-plugin/
+echo "install the kubectl ingress-nginx plugin..."
+kubectl krew install ingress-nginx
 
 # install the rancher cli.
 echo "installing rancher cli..."
