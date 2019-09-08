@@ -83,6 +83,7 @@ Vagrant.configure(2) do |config|
       config_pandora_fqdn,
       config_nfs_client_provisioner_version,
     ]
+    config.vm.provision 'shell', inline: '/vagrant/examples/redis/deploy.sh'
     config.vm.provision 'shell', inline: '/vagrant/examples/go-info/build.sh "$*"', args: [config_pandora_fqdn]
     config.vm.provision 'shell', inline: '/vagrant/examples/go-info/deploy.sh'
     config.vm.provision 'shell', path: 'summary.sh', args: [
