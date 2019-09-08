@@ -55,6 +55,7 @@ kubectl get clusterrolebinding --all-namespaces
 # rbac access matrix.
 # see https://github.com/corneliusweig/rakkess/blob/master/doc/USAGE.md
 kubectl krew install access-matrix
+kubectl access-matrix version --full
 kubectl access-matrix # at cluster scope.
 kubectl access-matrix --namespace default
 kubectl access-matrix --sa example-go-info --namespace default
