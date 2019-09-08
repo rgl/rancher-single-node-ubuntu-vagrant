@@ -1,0 +1,69 @@
+# see https://github.com/helm/charts/tree/master/stable/jenkins
+# see https://github.com/helm/charts/commits/master/stable/jenkins
+# see https://github.com/helm/charts/tree/b59766d2d37aab540dcb64ee1e0e6c4e0f20f92b/stable/jenkins
+# see https://github.com/jenkinsci/docker
+# see https://github.com/jenkinsci/docker-jnlp-slave
+# see https://github.com/jenkinsci/configuration-as-code-plugin
+# see https://hub.docker.com/r/jenkins/jenkins
+# see https://hub.docker.com/r/jenkins/jnlp-slave
+
+master.tag: 2.176.3
+master.serviceType: ClusterIP
+master.ingress.enabled: true
+master.ingress.apiVersion: networking.k8s.io/v1beta1
+master.ingress.hostName: jenkins.rancher.test
+master.installPlugins:
+  - kubernetes:1.18.3
+  - workflow-job:2.34
+  - workflow-aggregator:2.6
+  - credentials-binding:1.20
+  - git:3.12.0
+  - bouncycastle-api:2.17
+  - command-launcher:1.3
+  - jdk-tool:1.3
+  - configuration-as-code:1.30 # NB the version must match the one at master.JCasC.pluginVersion (see bellow).
+# configure jenkins "as code" using the JCasC plugin.
+# the general idea is to just to manually configure jenkins as needed, then look at the jenkins.yaml
+# file exported from http://jenkins.rancher.test/configuration-as-code/viewExport
+# and apply as it makes sense.
+# see http://jenkins.rancher.test/configuration-as-code/
+master.JCasC:
+  enabled: true
+  pluginVersion: 1.30
+  configScripts:
+    welcome-message: |
+      jenkins:
+        systemMessage: Welcome to our test Jenkins server! This is configured and managed 'as code'.
+    master: |
+      jenkins:
+        labelString: master
+        mode: EXCLUSIVE
+master.jobs:
+  test: |
+    <project>
+      <actions/>
+      <description></description>
+      <keepDependencies>false</keepDependencies>
+      <properties/>
+      <scm class="hudson.scm.NullSCM"/>
+      <assignedNode>slave-k8s</assignedNode>
+      <canRoam>false</canRoam>
+      <disabled>false</disabled>
+      <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+      <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+      <triggers/>
+      <concurrentBuild>false</concurrentBuild>
+      <builders>
+        <hudson.tasks.Shell>
+          <command>env</command>
+        </hudson.tasks.Shell>
+      </builders>
+      <publishers/>
+      <buildWrappers/>
+    </project>
+agent.tag: 3.29-1
+agent.customJenkinsLabels:
+  - slave-k8s
+agent.podName: jenkins-slave-k8s
+persistence.storageClass: nfs-client
+persistence.size: 1Gi

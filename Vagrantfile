@@ -29,7 +29,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = 'ubuntu-18.04-amd64'
 
   config.vm.provider 'libvirt' do |lv, config|
-    lv.memory = 4*1024
+    lv.memory = 5*1024
     lv.cpus = 4
     lv.cpu_mode = 'host-passthrough'
     lv.nested = true
@@ -39,16 +39,16 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider 'virtualbox' do |vb|
     vb.linked_clone = true
-    vb.memory = 4*1024
+    vb.memory = 5*1024
     vb.cpus = 4
   end
 
   config.vm.define :pandora do |config|
     config.vm.provider 'libvirt' do |lv, config|
-      lv.memory = 2*1024
+      lv.memory = 1*1024
     end
     config.vm.provider 'virtualbox' do |vb|
-      vb.memory = 2*1024
+      vb.memory = 1*1024
     end
     config.vm.hostname = config_pandora_fqdn
     config.vm.network :private_network, ip: config_pandora_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
@@ -83,6 +83,7 @@ Vagrant.configure(2) do |config|
       config_pandora_fqdn,
       config_nfs_client_provisioner_version,
     ]
+    config.vm.provision 'shell', inline: '/vagrant/examples/jenkins/deploy.sh'
     config.vm.provision 'shell', inline: '/vagrant/examples/redis/deploy.sh'
     config.vm.provision 'shell', inline: '/vagrant/examples/go-info/build.sh "$*"', args: [config_pandora_fqdn]
     config.vm.provision 'shell', inline: '/vagrant/examples/go-info/deploy.sh'
