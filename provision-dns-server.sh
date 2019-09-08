@@ -80,16 +80,17 @@ pdns-set-config webserver-allow-from "$pandora_ip_address/24"
 diff -u /etc/powerdns/pdns.conf{.orig,} || true
 
 # load the $rancher_domain zone into the database.
+# NB we use 1m for testing purposes, in real world, this should probably be 10m+.
 zone="
-\$TTL 10m
+\$TTL 1m
 \$ORIGIN $rancher_domain. ; base domain-name
 @               IN      SOA     a.ns    hostmaster (
-    2008042800 ; serial number (this number should be increased each time this zone file is changed)
-    10m        ; refresh (the polling interval that slave DNS server will query the master for zone changes)
+    2019090800 ; serial number (this number should be increased each time this zone file is changed)
+    1m         ; refresh (the polling interval that slave DNS server will query the master for zone changes)
                ; NB the slave will use this value insted of \$TTL when deciding if the zone it outdated
-    15m        ; update retry (the slave will retry a zone transfer after a transfer failure)
+    1m         ; update retry (the slave will retry a zone transfer after a transfer failure)
     3w         ; expire (the slave will ignore this zone if the transfer keeps failing for this long)
-    10m        ; minimum (the slave stores negative results for this long)
+    1m         ; minimum (the slave stores negative results for this long)
 )
                 IN      NS      a.ns
 "
