@@ -60,6 +60,7 @@ spec:
         - name: external-dns
           image: registry.opensource.zalan.do/teapot/external-dns:v0.5.16
           args:
+            - --source=service
             - --source=ingress
             - --provider=pdns
             - --pdns-server=@@pdns-server@@

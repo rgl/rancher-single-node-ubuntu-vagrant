@@ -56,14 +56,19 @@ spec:
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/service/
 # see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#service-v1-core
+# see https://github.com/kubernetes-incubator/external-dns/blob/v0.5.16/docs/initial-design.md
+# see https://github.com/kubernetes-incubator/external-dns/blob/v0.5.16/docs/ttl.md
 apiVersion: v1
 kind: Service
 metadata:
   name: example-go-info
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: example-go-info-lb.rancher.test
+    external-dns.alpha.kubernetes.io/ttl: "120"
 spec:
   selector:
     app: example-go-info
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     - name: http
       protocol: TCP

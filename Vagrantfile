@@ -12,6 +12,8 @@ config_rancher_cli_version = 'v2.2.0' # see https://github.com/rancher/cli/relea
 config_k8s_version = 'v1.15.3-rancher1-1'
 config_kubectl_version = '1.15.3-00' # NB execute apt-cache madison kubectl to known the available versions.
 config_krew_version = 'v0.2.1' # NB see https://github.com/kubernetes-sigs/krew
+config_metallb_helm_chart_version = '0.11.2' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
+config_metallb_ip_addresses = '10.1.0.10-10.1.0.20' # MetalLB will allocate IP addresses from this range.
 config_nfs_client_provisioner_version = '1.2.6' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
 
 hosts = """
@@ -79,6 +81,7 @@ Vagrant.configure(2) do |config|
       config_kubectl_version,
       config_krew_version,
     ]
+    config.vm.provision 'shell', path: 'provision-metallb.sh', args: [config_metallb_helm_chart_version, config_metallb_ip_addresses]
     config.vm.provision 'shell', path: 'provision-external-dns-pdns.sh', args: [config_pandora_fqdn, config_server_fqdn]
     config.vm.provision 'shell', path: 'provision-rancher-nfs-client.sh', args: [
       config_pandora_fqdn,
