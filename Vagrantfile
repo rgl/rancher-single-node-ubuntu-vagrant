@@ -79,6 +79,7 @@ Vagrant.configure(2) do |config|
       config_kubectl_version,
       config_krew_version,
     ]
+    config.vm.provision 'shell', path: 'provision-external-dns-pdns.sh', args: [config_pandora_fqdn, config_server_fqdn]
     config.vm.provision 'shell', path: 'provision-rancher-nfs-client.sh', args: [
       config_pandora_fqdn,
       config_nfs_client_provisioner_version,
