@@ -13,11 +13,11 @@ master.ingress.enabled: true
 master.ingress.apiVersion: networking.k8s.io/v1beta1
 master.ingress.hostName: jenkins.rancher.test
 master.installPlugins:
-  - kubernetes:1.18.3
-  - workflow-job:2.34
+  - kubernetes:1.19.0
+  - workflow-job:2.35
   - workflow-aggregator:2.6
   - credentials-binding:1.20
-  - git:3.12.0
+  - git:3.12.1
   - bouncycastle-api:2.17
   - command-launcher:1.3
   - jdk-tool:1.3
@@ -55,7 +55,7 @@ master.jobs:
       <concurrentBuild>false</concurrentBuild>
       <builders>
         <hudson.tasks.Shell>
-          <command>env</command>
+          <command>env | sort</command>
         </hudson.tasks.Shell>
       </builders>
       <publishers/>
