@@ -8,6 +8,9 @@ set -eu
 config_metallb_helm_chart_version="${1:-0.11.2}"; shift || true
 metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
 
+# switch to the System project.
+rancher context switch System
+
 # deploy the metallb helm chart.
 # NB this creates the app inside the current rancher cli project (the one returned by rancher context current).
 # see https://github.com/helm/charts/tree/master/stable/metallb
@@ -31,3 +34,6 @@ EOF
 
 echo "waiting for the metallb app to be active..."
 rancher wait --timeout=600 metallb
+
+# switch back to the Default project.
+rancher context switch Default
