@@ -5,6 +5,15 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
 
+# wrap commands in a way that their output is correctly (most of the time) displayed on the vagrant up output.
+# see https://github.com/hashicorp/vagrant/issues/11047
+function docker {
+    set +x; echo "$(/usr/bin/docker "$@")"; set -x
+}
+function kubectl {
+    set +x; echo "$(/usr/bin/kubectl "$@")"; set -x
+}
+
 # list images.
 echo "listing $registry_host images..."
 wget -qO- --user vagrant --password vagrant \
@@ -45,6 +54,7 @@ docker inspect kube-controller-manager | jq -r '.[0].Args[]' | sed -E 's,(.+),  
 docker inspect kubelet | jq -r '.[0].Args[]' | sed -E 's,(.+),    \1,g'
 
 # rbac info.
+kubectl auth can-i --list
 kubectl get serviceaccount --all-namespaces
 kubectl get role --all-namespaces
 kubectl get rolebinding --all-namespaces
