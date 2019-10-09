@@ -2,7 +2,7 @@
 set -eux
 
 # NB execute apt-cache madison docker-ce to known the available versions.
-docker_version="${1:-5:19.03.1~3-0~ubuntu-bionic}"; shift || true
+docker_version="${1:-5:19.03.3~3-0~ubuntu-bionic}"; shift || true
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
