@@ -10,7 +10,7 @@ rancher_version="${1:-v2.2.8}"; shift || true
 rancher_cli_version="${1:-v2.2.0}"; shift || true
 k8s_version="${1:-v1.15.3-rancher1-1}"; shift || true
 kubectl_version="${1:-1.15.3-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
-krew_version="${1:-v0.2.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
+krew_version="${1:-v0.3.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 node_ip_address="$rancher_ip_address"
 registry_host="$registry_domain:5000"
@@ -252,8 +252,8 @@ kubectl completion bash >/etc/bash_completion.d/kubectl
 
 # install the krew kubectl package manager.
 echo "installing the krew $krew_version kubectl package manager..."
-wget -qO- "https://storage.googleapis.com/krew/$krew_version/krew.tar.gz" | tar xzf - ./krew-linux_amd64
-wget -q "https://storage.googleapis.com/krew/$krew_version/krew.yaml"
+wget -qO- "https://github.com/kubernetes-sigs/krew/releases/download/$krew_version/krew.tar.gz" | tar xzf - ./krew-linux_amd64
+wget -q "https://github.com/kubernetes-sigs/krew/releases/download/$krew_version/krew.yaml"
 ./krew-linux_amd64 install --manifest=krew.yaml
 cat >/etc/profile.d/krew.sh <<'EOF'
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
