@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux
 
-redis_helm_version="${1:-9.1.7}"; shift || true # see https://github.com/helm/charts/blob/master/stable/redis/Chart.yaml
+redis_helm_version="${1:-9.3.0}"; shift || true # see https://github.com/helm/charts/blob/master/stable/redis/Chart.yaml
 
 cd $(dirname $0)
 
