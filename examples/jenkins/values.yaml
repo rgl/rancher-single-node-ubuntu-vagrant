@@ -1,19 +1,19 @@
 # see https://github.com/helm/charts/tree/master/stable/jenkins
 # see https://github.com/helm/charts/commits/master/stable/jenkins
-# see https://github.com/helm/charts/tree/b59766d2d37aab540dcb64ee1e0e6c4e0f20f92b/stable/jenkins
+# see https://github.com/helm/charts/tree/868ec67e4300c32040d9ece15fd27054409ef34b/stable/jenkins
 # see https://github.com/jenkinsci/docker
 # see https://github.com/jenkinsci/docker-jnlp-slave
 # see https://github.com/jenkinsci/configuration-as-code-plugin
 # see https://hub.docker.com/r/jenkins/jenkins
 # see https://hub.docker.com/r/jenkins/jnlp-slave
 
-master.tag: 2.176.3
+master.tag: 2.190.1
 master.serviceType: ClusterIP
 master.ingress.enabled: true
 master.ingress.apiVersion: networking.k8s.io/v1beta1
 master.ingress.hostName: jenkins.rancher.test
 master.installPlugins:
-  - kubernetes:1.19.0
+  - kubernetes:1.20.0
   - workflow-job:2.35
   - workflow-aggregator:2.6
   - credentials-binding:1.20
@@ -21,19 +21,19 @@ master.installPlugins:
   - bouncycastle-api:2.17
   - command-launcher:1.3
   - jdk-tool:1.3
-  - configuration-as-code:1.30 # NB the version must match the one at master.JCasC.pluginVersion (see bellow).
+  - configuration-as-code:1.32 # NB the version must match the one at master.JCasC.pluginVersion (see bellow).
 # configure jenkins "as code" using the JCasC plugin.
-# the general idea is to just to manually configure jenkins as needed, then look at the jenkins.yaml
-# file exported from http://jenkins.rancher.test/configuration-as-code/viewExport
-# and apply as it makes sense.
+# the general idea is: you manually configure jenkins as needed using its UI, then compare the generated
+# jenkins.yaml file exported from http://jenkins.rancher.test/configuration-as-code/viewExport and apply
+# its contents to this "master.JCasC" object.
 # see http://jenkins.rancher.test/configuration-as-code/
 master.JCasC:
   enabled: true
-  pluginVersion: 1.30
+  pluginVersion: 1.32
   configScripts:
     welcome-message: |
       jenkins:
-        systemMessage: Welcome to our test Jenkins server! This is configured and managed 'as code'.
+        systemMessage: Welcome to our test Jenkins server! This is configured by the configuration-as-code (aka JCasC) plugin.
     master: |
       jenkins:
         labelString: master
@@ -61,7 +61,7 @@ master.jobs:
       <publishers/>
       <buildWrappers/>
     </project>
-agent.tag: 3.29-1
+agent.tag: 3.35-5
 agent.customJenkinsLabels:
   - slave-k8s
 agent.podName: jenkins-slave-k8s
