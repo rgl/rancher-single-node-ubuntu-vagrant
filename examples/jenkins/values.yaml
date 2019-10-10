@@ -7,6 +7,7 @@
 # see https://hub.docker.com/r/jenkins/jenkins
 # see https://hub.docker.com/r/jenkins/jnlp-slave
 
+clusterZone: cluster.domain
 master.tag: 2.190.1
 master.serviceType: ClusterIP
 master.ingress.enabled: true
