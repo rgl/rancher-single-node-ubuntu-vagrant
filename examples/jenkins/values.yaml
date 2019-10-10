@@ -56,7 +56,11 @@ master.jobs:
       <concurrentBuild>false</concurrentBuild>
       <builders>
         <hudson.tasks.Shell>
-          <command>env | sort</command>
+          <command>env | sort
+    cat /etc/os-release
+    which java
+    java -version
+    </command>
         </hudson.tasks.Shell>
       </builders>
       <publishers/>
