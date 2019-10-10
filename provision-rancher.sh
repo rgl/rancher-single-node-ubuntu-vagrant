@@ -119,32 +119,49 @@ wget -qO- \
     "$rancher_server_url/v3/settings/telemetry-opt"
 
 # create the cluster.
-# NB this JSON can be obtained by observing the network when manually creating a cluster from the rancher UI.
+# NB this JSON can be obtained by observing the network when manually creating a cluster from the rancher UI,
+#    and more exactly using the schemas browser at https://server.rancher.test:8443/v3/schemas.
+# NB to troubleshoot why the cluster provisioning is failing with something like:
+#       cluster c-fhrlt state: provisioning Failed to get job complete status for job rke-network-plugin-deploy-job in namespace kube-system
+#    execute:
+#       docker ps -a -f status=exited --format '{{.Names}} {{.Command}}' --no-trunc | grep -v /pause | grep rke-network-plugin
+#    then get the logs with, e.g.:
+#       docker logs k8s_rke-network-plugin-pod_rke-network-plugin-deploy-job-tcm8p_kube-system_ac5adeb3-16ca-417d-b899-f51f14d5c712_0
+# see https://server.rancher.test:8443/v3/schemas/cluster
+# see https://server.rancher.test:8443/v3/schemas/rancherKubernetesEngineConfig
+# see https://server.rancher.test:8443/v3/schemas/rkeConfigServices
+# see https://server.rancher.test:8443/v3/schemas/kubeAPIService
+# see https://server.rancher.test:8443/v3/schemas/kubeControllerService
+# see https://server.rancher.test:8443/v3/schemas/kubeletService
+# see https://rancher.com/docs/rancher/v2.x/en/cluster-provisioning/rke-clusters/windows-clusters/
+# see docker ps --format '{{.Image}} {{.Names}} {{.Command}}' --no-trunc
+# see docker logs kubelet
+# see find /opt -type f | grep -v /catalog-cache
+# see /etc/cni
 echo "creating the cluster..."
 cluster_response="$(wget -qO- \
     --header 'Content-Type: application/json' \
     --header "Authorization: Bearer $admin_api_token" \
     --post-data '{
+        "type": "cluster",
         "dockerRootDir": "/var/lib/docker",
         "enableNetworkPolicy": false,
-        "type": "cluster",
         "rancherKubernetesEngineConfig": {
+            "type": "rancherKubernetesEngineConfig",
             "kubernetesVersion": "'$k8s_version'",
             "addonJobTimeout": 30,
             "ignoreDockerVersion": true,
             "sshAgentAuth": false,
-            "type": "rancherKubernetesEngineConfig",
             "authentication": {
                 "type": "authnConfig",
                 "strategy": "x509"
             },
             "network": {
+                "type": "networkConfig",
+                "plugin": "flannel",
                 "options": {
-                    "flannelBackendType": "vxlan"
-                },
-                "plugin": "canal",
-                "canalNetworkProvider": {
-                    "iface": "eth1"
+                    "flannel_backend_type": "host-gw",
+                    "flannel_iface": "eth1"
                 }
             },
             "ingress": {
@@ -158,8 +175,20 @@ cluster_response="$(wget -qO- \
             "services": {
                 "type": "rkeConfigServices",
                 "kubeApi": {
+                    "type": "kubeAPIService",
                     "podSecurityPolicy": false,
-                    "type": "kubeAPIService"
+                    "serviceClusterIpRange": "10.53.0.0/16",
+                    "serviceNodePortRange": "30000-32767"
+                },
+                "kubeController": {
+                    "type": "kubeControllerService",
+                    "clusterCidr": "10.52.0.0/16",
+                    "serviceClusterIpRange": "10.53.0.0/16"
+                },
+                "kubelet": {
+                    "type": "kubeletService",
+                    "clusterDnsServer": "10.53.0.10",
+                    "clusterDomain": "cluster.domain"
                 },
                 "etcd": {
                     "creation": "12h",
@@ -197,7 +226,6 @@ cluster_registration_response="$(
         --header "Authorization: Bearer $admin_api_token" \
         --post-data '{"type":"clusterRegistrationToken","clusterId":"'$cluster_id'"}' \
         "$rancher_server_url/v3/clusterregistrationtoken")"
-echo "registering this node as a rancher-agent..."
 rancher_agent_registration_command="
     $(echo "$cluster_registration_response" | jq -r .nodeCommand)
         --address $node_ip_address
@@ -205,6 +233,7 @@ rancher_agent_registration_command="
         --etcd
         --controlplane
         --worker"
+echo "registering this node as a rancher-agent with $rancher_agent_registration_command..."
 $rancher_agent_registration_command
 
 # wait for the cluster to be active.
