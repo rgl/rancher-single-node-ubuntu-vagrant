@@ -28,7 +28,7 @@ redis_password="$(kubectl get secret --namespace redis redis -o jsonpath="{.data
 redis_image="$(kubectl get pod --namespace redis redis-master-0 -o jsonpath="{.spec.containers[?(@.name=='redis')].image}")"
 kubectl run \
     --namespace redis \
-    --rm -it --restart=Never \
+    --rm -i --restart=Never \
     --image "$redis_image" \
     --env "REDISCLI_AUTH=$redis_password" \
     redis-client \
@@ -37,7 +37,7 @@ kubectl run \
 echo "setting the message key value..."
 kubectl run \
     --namespace redis \
-    --rm -it --restart=Never \
+    --rm -i --restart=Never \
     --image "$redis_image" \
     --env "REDISCLI_AUTH=$redis_password" \
     redis-client \

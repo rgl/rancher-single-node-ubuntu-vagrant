@@ -41,7 +41,7 @@ kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
 Make sure that all of the following commands return the IP address of our `pandora` dns server:
 
 ```bash
-docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.1.0.2
+docker run -i --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.1.0.2
 kubectl --namespace ingress-nginx \
     exec \
     $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \

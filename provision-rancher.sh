@@ -23,8 +23,8 @@ registry_password='vagrant'
 # see https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/
 cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
-docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf
-kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -it --rm test cat /etc/resolv.conf
+docker run -i --rm --name test debian:buster-slim cat /etc/resolv.conf
+kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -i --rm test cat /etc/resolv.conf
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/resolv.conf
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/nginx/nginx.conf | grep resolver
 kubectl --namespace ingress-nginx get pods

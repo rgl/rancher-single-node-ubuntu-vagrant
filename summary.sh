@@ -73,6 +73,6 @@ kubectl access-matrix --sa example-go-info --namespace default
 # show dns information.
 # see https://rancher.com/docs/rancher/v2.x/en/troubleshooting/dns/
 kubectl -n kube-system get svc -l k8s-app=kube-dns
-kubectl run -it --rm --restart=Never busybox --image=busybox:1.28 -- nslookup kubernetes.default
-kubectl run -it --rm --restart=Never busybox --image=busybox:1.28 -- nslookup $registry_domain
-kubectl run -it --rm --restart=Never busybox --image=busybox:1.28 -- nslookup ruilopes.com
+kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup kubernetes.default
+kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup $registry_domain
+kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup ruilopes.com
