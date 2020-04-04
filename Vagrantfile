@@ -89,8 +89,8 @@ Vagrant.configure(2) do |config|
     ]
     config.vm.provision 'shell', inline: '/vagrant/examples/jenkins/deploy.sh'
     config.vm.provision 'shell', inline: '/vagrant/examples/redis/deploy.sh'
-    config.vm.provision 'shell', inline: '/vagrant/examples/go-info/build.sh "$*"', args: [config_pandora_fqdn]
-    config.vm.provision 'shell', inline: '/vagrant/examples/go-info/deploy.sh'
+    config.vm.provision 'shell', inline: '/vagrant/examples/kubernetes-hello/build.sh "$*"', args: [config_pandora_fqdn]
+    config.vm.provision 'shell', inline: '/vagrant/examples/kubernetes-hello/deploy.sh'
     config.vm.provision 'shell', path: 'summary.sh', args: [
       config_pandora_fqdn,
     ]

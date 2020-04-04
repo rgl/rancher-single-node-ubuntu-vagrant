@@ -110,7 +110,7 @@ Then start all the machines and test the DNS resolution:
 ```bash
 vagrant up
 dig pandora.rancher.test
-dig example-go-info.rancher.test
+dig kubernetes-hello.rancher.test
 ```
 
 ## References

@@ -1,0 +1,6 @@
+resources:
+  - tmp/example-resources.yml
+images:
+  - name: ruilopes/kubernetes-hello
+    newName: pandora.rancher.test:5000/kubernetes-hello
+    newTag: 1.0.0

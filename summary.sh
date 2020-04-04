@@ -68,7 +68,7 @@ kubectl krew install access-matrix
 kubectl access-matrix version --full
 kubectl access-matrix # at cluster scope.
 kubectl access-matrix --namespace default
-kubectl access-matrix --sa example-go-info --namespace default
+kubectl access-matrix --sa kubernetes-hello --namespace default
 
 # show dns information.
 # see https://rancher.com/docs/rancher/v2.x/en/troubleshooting/dns/
