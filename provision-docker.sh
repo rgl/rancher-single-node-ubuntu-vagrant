@@ -17,5 +17,30 @@ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(
 apt-get update
 apt-get install -y "docker-ce=$docker_version" "docker-ce-cli=$docker_version" containerd.io
 
+# configure it.
+systemctl stop docker
+cat >/etc/docker/daemon.json <<'EOF'
+{
+    "experimental": false,
+    "debug": false,
+    "log-driver": "journald",
+    "labels": [
+        "os=linux"
+    ],
+    "hosts": [
+        "unix://"
+    ]
+}
+EOF
+# start docker without any command line flags as its entirely configured from daemon.json.
+install -d /etc/systemd/system/docker.service.d
+cat >/etc/systemd/system/docker.service.d/override.conf <<'EOF'
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd
+EOF
+systemctl daemon-reload
+systemctl start docker
+
 # let the vagrant user manage docker.
 usermod -aG docker vagrant
