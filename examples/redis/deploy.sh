@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux
 
-redis_helm_version="${1:-9.3.0}"; shift || true # see https://github.com/helm/charts/blob/master/stable/redis/Chart.yaml
+redis_helm_version="${1:-10.5.7}"; shift || true # see https://github.com/helm/charts/blob/master/stable/redis/Chart.yaml
 
 cd $(dirname $0)
 
@@ -23,9 +23,20 @@ rancher app install \
 echo "waiting for the redis app to be active..."
 rancher wait --timeout=600 redis
 
-echo "trying redis master..."
-redis_password="$(kubectl get secret --namespace redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)"
+echo "getting the redis image and password..."
 redis_image="$(kubectl get pod --namespace redis redis-master-0 -o jsonpath="{.spec.containers[?(@.name=='redis')].image}")"
+redis_password="$(kubectl get secret --namespace redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)"
+
+echo "waiting for redis to be ready..."
+kubectl run \
+    --namespace redis \
+    --rm -i --restart=Never \
+    --image "$redis_image" \
+    --env "REDISCLI_AUTH=$redis_password" \
+    redis-client \
+    --command sh -- -c 'while [ "$(redis-cli -h redis-master ping)" != "PONG" ]; do sleep 1; done; echo "redis is ready!"'
+
+echo "trying redis master..."
 kubectl run \
     --namespace redis \
     --rm -i --restart=Never \
