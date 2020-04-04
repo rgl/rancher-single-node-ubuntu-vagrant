@@ -6,15 +6,15 @@ config_pandora_ip_address = '10.1.0.2'
 config_server_fqdn = 'server.rancher.test'
 config_server_ip_address = '10.1.0.3'
 config_admin_password = 'admin'
-config_docker_version = '5:19.03.3~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
-config_rancher_version = 'v2.3.0' # see https://github.com/rancher/rancher/releases
-config_rancher_cli_version = 'v2.3.0' # see https://github.com/rancher/cli/releases
-config_k8s_version = 'v1.15.4-rancher1-2'
-config_kubectl_version = '1.15.4-00' # NB execute apt-cache madison kubectl to known the available versions.
-config_krew_version = 'v0.3.1' # NB see https://github.com/kubernetes-sigs/krew
-config_metallb_helm_chart_version = '0.11.2' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
+config_docker_version = '5:19.03.8~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+config_rancher_version = 'v2.4.2' # see https://github.com/rancher/rancher/releases
+config_rancher_cli_version = 'v2.4.0' # see https://github.com/rancher/cli/releases
+config_k8s_version = 'v1.17.4-rancher1-1'
+config_kubectl_version = '1.17.4-00' # NB execute apt-cache madison kubectl to known the available versions.
+config_krew_version = 'v0.3.4' # NB see https://github.com/kubernetes-sigs/krew
+config_metallb_helm_chart_version = '0.12.0' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
 config_metallb_ip_addresses = '10.1.0.10-10.1.0.20' # MetalLB will allocate IP addresses from this range.
-config_nfs_client_provisioner_version = '1.2.6' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
+config_nfs_client_provisioner_version = '1.2.8' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
 
 hosts = """
 127.0.0.1	localhost

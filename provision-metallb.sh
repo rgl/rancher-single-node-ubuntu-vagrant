@@ -5,7 +5,7 @@ set -eu
 # deploy the MetalLB LoadBalancer.
 # see https://metallb.universe.tf/configuration/#layer-2-configuration
 
-config_metallb_helm_chart_version="${1:-0.11.2}"; shift || true
+config_metallb_helm_chart_version="${1:-0.12.0}"; shift || true
 metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
 
 # switch to the System project.
