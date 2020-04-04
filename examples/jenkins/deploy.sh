@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux
 
-jenkins_helm_version="${1:-1.7.4}"; shift || true # see https://github.com/helm/charts/blob/master/stable/jenkins/Chart.yaml
+jenkins_helm_version="${1:-1.10.2}"; shift || true # see https://github.com/helm/charts/blob/master/stable/jenkins/Chart.yaml
 
 cd $(dirname $0)
 
