@@ -36,6 +36,40 @@ kubectl get all --all-namespaces -o wide
 kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
 ```
 
+### Hyper-V
+
+Create the required virtual switches:
+
+```bash
+PowerShell -NoLogo -NoProfile -ExecutionPolicy Bypass <<'EOF'
+@(
+  @{Name='rancher'; IpAddress='10.1.0.1'}
+) | ForEach-Object {
+  $switchName = $_.Name
+  $switchIpAddress = $_.IpAddress
+  $networkAdapterName = "vEthernet ($switchName)"
+  $networkAdapterIpAddress = $switchIpAddress
+  $networkAdapterIpPrefixLength = 24
+
+  # create the vSwitch.
+  New-VMSwitch -Name $switchName -SwitchType Internal | Out-Null
+
+  # assign it an host IP address.
+  $networkAdapter = Get-NetAdapter $networkAdapterName
+  $networkAdapter | New-NetIPAddress `
+      -IPAddress $networkAdapterIpAddress `
+      -PrefixLength $networkAdapterIpPrefixLength `
+      | Out-Null
+}
+
+# remove all virtual switches from the windows firewall.
+Set-NetFirewallProfile `
+    -DisabledInterfaceAliases (
+            Get-NetAdapter -name "vEthernet*" | Where-Object {$_.ifIndex}
+        ).InterfaceAlias
+EOF
+```
+
 ## DNS
 
 Make sure that all of the following commands return the IP address of our `pandora` dns server:

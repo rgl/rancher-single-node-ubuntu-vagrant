@@ -1,6 +1,9 @@
 # to make sure the nodes are created in order we have to force a --no-parallel execution.
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
+# to be able to configure hyper-v.
+ENV['VAGRANT_EXPERIMENTAL'] = 'typed_triggers'
+
 config_pandora_fqdn = 'pandora.rancher.test'
 config_pandora_ip_address = '10.1.0.2'
 config_server_fqdn = 'server.rancher.test'
@@ -34,7 +37,7 @@ Vagrant.configure(2) do |config|
     lv.memory = 5*1024
     lv.cpus = 4
     lv.cpu_mode = 'host-passthrough'
-    lv.nested = true
+    lv.nested = false
     lv.keymap = 'pt'
     config.vm.synced_folder '.', '/vagrant', type: 'nfs'
   end
@@ -45,6 +48,46 @@ Vagrant.configure(2) do |config|
     vb.cpus = 4
   end
 
+  config.vm.provider 'hyperv' do |hv, config|
+    hv.linked_clone = true
+    hv.memory = 5*1024
+    hv.cpus = 4
+    hv.enable_virtualization_extensions = false # nested virtualization.
+    hv.vlan_id = ENV['HYPERV_VLAN_ID']
+    # set the management network adapter.
+    # see https://github.com/hashicorp/vagrant/issues/7915
+    # see https://github.com/hashicorp/vagrant/blob/10faa599e7c10541f8b7acf2f8a23727d4d44b6e/plugins/providers/hyperv/action/configure.rb#L21-L35
+    config.vm.network :private_network,
+      bridge: ENV['HYPERV_SWITCH_NAME'] if ENV['HYPERV_SWITCH_NAME']
+    config.vm.synced_folder '.', '/vagrant',
+      type: 'smb',
+      smb_username: ENV['VAGRANT_SMB_USERNAME'] || ENV['USER'],
+      smb_password: ENV['VAGRANT_SMB_PASSWORD']
+    # further configure the VM (e.g. manage the network adapters).
+    config.trigger.before :'VagrantPlugins::HyperV::Action::StartInstance', type: :action do |trigger|
+      trigger.ruby do |env, machine|
+        # see https://github.com/hashicorp/vagrant/blob/v2.2.10/lib/vagrant/machine.rb#L13
+        # see https://github.com/hashicorp/vagrant/blob/v2.2.10/plugins/kernel_v2/config/vm.rb#L716
+        bridges = machine.config.vm.networks.select{|type, options| type == :private_network && options.key?(:hyperv__bridge)}.map do |type, options|
+          mac_address_spoofing = false
+          mac_address_spoofing = options[:hyperv__mac_address_spoofing] if options.key?(:hyperv__mac_address_spoofing)
+          [options[:hyperv__bridge], mac_address_spoofing]
+        end
+        system(
+          'PowerShell',
+          '-NoLogo',
+          '-NoProfile',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          'configure-hyperv.ps1',
+          machine.id,
+          bridges.to_json
+        )
+      end
+    end
+  end
+
   config.vm.define :pandora do |config|
     config.vm.provider 'libvirt' do |lv, config|
       lv.memory = 1*1024
@@ -52,8 +95,21 @@ Vagrant.configure(2) do |config|
     config.vm.provider 'virtualbox' do |vb|
       vb.memory = 1*1024
     end
+    config.vm.provider 'hyperv' do |hv|
+      hv.memory = 1*1024
+    end
     config.vm.hostname = config_pandora_fqdn
-    config.vm.network :private_network, ip: config_pandora_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
+    config.vm.network :private_network,
+      ip: config_pandora_ip_address,
+      libvirt__forward_mode: 'route',
+      libvirt__dhcp_enabled: false,
+      hyperv__bridge: 'rancher'
+    config.vm.provision :shell,
+      path: 'configure-hyperv.sh',
+      args: [
+        config_pandora_ip_address
+      ],
+      run: 'always'
     config.vm.provision 'shell', inline: 'echo "$1" >/etc/hosts', args: [hosts]
     config.vm.provision 'shell', path: 'provision-base.sh'
     config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_pandora_fqdn]
@@ -65,7 +121,17 @@ Vagrant.configure(2) do |config|
 
   config.vm.define :server do |config|
     config.vm.hostname = config_server_fqdn
-    config.vm.network :private_network, ip: config_server_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
+    config.vm.network :private_network,
+      ip: config_server_ip_address,
+      libvirt__forward_mode: 'route',
+      libvirt__dhcp_enabled: false,
+      hyperv__bridge: 'rancher'
+    config.vm.provision :shell,
+      path: 'configure-hyperv.sh',
+      args: [
+        config_server_ip_address
+      ],
+      run: 'always'
     config.vm.provision 'shell', path: 'provision-base.sh'
     config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
     config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
