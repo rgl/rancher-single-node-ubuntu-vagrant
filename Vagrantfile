@@ -6,7 +6,7 @@ config_pandora_ip_address = '10.1.0.2'
 config_server_fqdn = 'server.rancher.test'
 config_server_ip_address = '10.1.0.3'
 config_admin_password = 'admin'
-config_docker_version = '5:19.03.8~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+config_docker_version = '5:19.03.13~3-0~ubuntu-focal' # NB execute apt-cache madison docker-ce to known the available versions.
 config_rancher_version = 'v2.4.2' # see https://github.com/rancher/rancher/releases
 config_rancher_cli_version = 'v2.4.0' # see https://github.com/rancher/cli/releases
 config_k8s_version = 'v1.17.4-rancher1-1'
@@ -28,7 +28,7 @@ ff02::2 ip6-allrouters
 """
 
 Vagrant.configure(2) do |config|
-  config.vm.box = 'ubuntu-18.04-amd64'
+  config.vm.box = 'ubuntu-20.04-amd64'
 
   config.vm.provider 'libvirt' do |lv, config|
     lv.memory = 5*1024

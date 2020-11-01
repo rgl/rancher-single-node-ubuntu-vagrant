@@ -4,7 +4,7 @@ This is a [single node rancher](https://rancher.com/docs/rancher/v2.x/en/install
 
 ## Usage
 
-Install the [ubuntu-18.04-amd64](https://github.com/rgl/ubuntu-vagrant) box.
+Install the [ubuntu-20.04-amd64](https://github.com/rgl/ubuntu-vagrant) box.
 
 Launch the environment:
 
@@ -41,6 +41,8 @@ kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
 Make sure that all of the following commands return the IP address of our `pandora` dns server:
 
 ```bash
+vagrant ssh server
+sudo su -l
 docker run -i --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.1.0.2
 kubectl --namespace ingress-nginx \
     exec \
@@ -56,7 +58,7 @@ kubectl --namespace ingress-nginx \
 
 To delegate the `rancher.test` zone to the kubernetes managed external dns server (running in pandora) you need to configure your system to delegate that DNS zone to the pandora DNS server, for that, you can configure your system to only use dnsmasq.
 
-For example, on my Ubuntu 18.04 Desktop, I have uninstalled `resolvconf`, disabled `NetworkManager`, and manually configured the network interfaces:
+For example, on my Ubuntu 20.04 Desktop, I have uninstalled `resolvconf`, disabled `NetworkManager`, and manually configured the network interfaces:
 
 ```bash
 sudo su -l
