@@ -23,18 +23,30 @@ rancher app install \
 echo "waiting for the redis app to be active..."
 rancher wait --timeout=600 redis
 
-echo "getting the redis image and password..."
-redis_image="$(kubectl get pod --namespace redis redis-master-0 -o jsonpath="{.spec.containers[?(@.name=='redis')].image}")"
-redis_password="$(kubectl get secret --namespace redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)"
-
+set +x
 echo "waiting for redis to be ready..."
-kubectl run \
-    --namespace redis \
-    --rm -i --restart=Never \
-    --image "$redis_image" \
-    --env "REDISCLI_AUTH=$redis_password" \
-    redis-client \
-    --command sh -- -c 'while [ "$(redis-cli -h redis-master ping)" != "PONG" ]; do sleep 1; done; echo "redis is ready!"'
+while true; do
+    # NB for some odd reason the redis password changes under our feets,
+    #    so we always get it inside this loop.
+    # TODO mount the secret inside the pod instead.
+    redis_image="$(kubectl get pod --namespace redis redis-master-0 -o jsonpath="{.spec.containers[?(@.name=='redis')].image}")"
+    redis_password="$(kubectl get secret --namespace redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)"
+    pong_response="$(
+        kubectl run \
+            --namespace redis \
+            --rm -i --restart=Never \
+            --image "$redis_image" \
+            --env "REDISCLI_AUTH=$redis_password" \
+            redis-client \
+            --command sh -- -c 'redis-cli -h redis-master ping' \
+            | grep PONG
+        )"
+    if [ "$pong_response" == "PONG" ]; then
+        break
+    fi
+    sleep 1
+done
+set -x
 
 echo "trying redis master..."
 kubectl run \
