@@ -72,7 +72,10 @@ kubectl access-matrix --sa kubernetes-hello --namespace default
 
 # show dns information.
 # see https://rancher.com/docs/rancher/v2.x/en/troubleshooting/dns/
+kubectl -n kube-system get configmap coredns -o jsonpath='{.data.Corefile}'
 kubectl -n kube-system get svc -l k8s-app=kube-dns
-kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup kubernetes.default
+kubectl get svc kubernetes
+kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- cat /etc/resolv.conf
+kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup kubernetes
 kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup $registry_domain
 kubectl run -i --rm --restart=Never busybox --image=busybox:1.28 -- nslookup ruilopes.com
