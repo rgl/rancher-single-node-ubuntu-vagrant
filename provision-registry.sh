@@ -1,10 +1,10 @@
 #!/bin/bash
-set -eu
+set -euxo pipefail
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
-registry_image='registry:2.7.1'
+registry_image='registry:2.7.1' # see https://hub.docker.com/_/registry
 registry_username='vagrant'
 registry_password='vagrant'
 
@@ -15,10 +15,17 @@ cp /vagrant/shared/tls/example-ca/$registry_domain-crt.pem /opt/registry/secrets
 cp /vagrant/shared/tls/example-ca/$registry_domain-key.pem /opt/registry/secrets/key.pem
 
 # create a registry user.
+# NB we've hardcoded registry:2.7.0 here because the floating registry:2.7.1
+#    tag no longer includes htpasswd.
+#    see https://github.com/docker/distribution-library-image/issues/107
 docker run \
     --rm \
     --entrypoint htpasswd \
-    "$registry_image" -Bbn "$registry_username" "$registry_password" >/opt/registry/secrets/htpasswd
+    'registry:2.7.0' \
+    -Bbn \
+    "$registry_username" \
+    "$registry_password" \
+    >/opt/registry/secrets/htpasswd
 
 # create the http secret.
 install -d -m 700 /opt/registry/secrets
