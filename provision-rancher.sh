@@ -6,11 +6,11 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain:8443"
 rancher_ip_address="${1:-10.1.0.3}"; shift || true
 admin_password="${1:-admin}"; shift || true
-rancher_version="${1:-v2.4.8}"; shift || true
+rancher_version="${1:-v2.5.1}"; shift || true
 rancher_cli_version="${1:-v2.4.0}"; shift || true
-k8s_version="${1:-v1.18.6-rancher1-2}"; shift || true
-kubectl_version="${1:-1.18.6-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
-krew_version="${1:-v0.3.4}"; shift # NB see https://github.com/kubernetes-sigs/krew
+k8s_version="${1:-v1.19.3-rancher1-1}"; shift || true
+kubectl_version="${1:-1.19.3-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+krew_version="${1:-v0.4.0}"; shift # NB see https://github.com/kubernetes-sigs/krew
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 node_ip_address="$rancher_ip_address"
 registry_host="$registry_domain:5000"
@@ -52,6 +52,7 @@ install -d -m 700 /opt/rancher/log/audit
 docker run -d \
     --restart=unless-stopped \
     --name rancher \
+    --privileged \
     -p 8080:80 \
     -p 8443:443 \
     -v /opt/rancher/data:/var/lib/rancher \
@@ -301,17 +302,35 @@ echo "installing rancher cli..."
 wget -qO- "https://github.com/rancher/cli/releases/download/$rancher_cli_version/rancher-linux-amd64-$rancher_cli_version.tar.xz" \
     | tar xJf - --strip-components 2
 mv rancher /usr/local/bin
-rancher login "$rancher_server_url" --token "$admin_api_token" --name 'example'
 
-# register custom registry for all namespaces inside the created cluster Default project.
-registry_name="$(echo "$registry_host" | sed -E 's,[^a-z0-9],-,g')"
+echo "getting the $cluster_id cluster System project..."
+project_response="$(
+    wget -qO- \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer $admin_api_token" \
+        "$rancher_server_url/v3/projects?clusterId=$cluster_id&name=System")"
+system_project_id="$(echo "$project_response" | jq -r .data[].id)"
+echo -n "$system_project_id" >~/.rancher-system-project-id
+
 echo "getting the $cluster_id cluster Default project..."
 project_response="$(
     wget -qO- \
         --header 'Content-Type: application/json' \
         --header "Authorization: Bearer $admin_api_token" \
         "$rancher_server_url/v3/projects?clusterId=$cluster_id&name=Default")"
+default_project_id="$(echo "$project_response" | jq -r .data[].id)"
+echo -n "$default_project_id" >~/.rancher-default-project-id
+
+# login into rancher.
+echo "login into rancher cli..."
+rancher login "$rancher_server_url" \
+    --token "$admin_api_token" \
+    --name 'example' \
+    --context "$default_project_id"
+
+# register custom registry for all namespaces inside the created cluster Default project.
 echo "registering the $registry_host registry..."
+registry_name="$(echo "$registry_host" | sed -E 's,[^a-z0-9],-,g')"
 docker_credentials_url="$(echo "$project_response" | jq -r .data[].links.dockerCredentials)"
 docker_credentials_response="$(
     wget -qO- \
@@ -340,6 +359,15 @@ EOF
 # enable the helm stable app catalog.
 echo 'enabling the Helm Stable app catalog...'
 rancher catalog add --branch master helm https://kubernetes-charts.storage.googleapis.com/
-
 echo 'waiting for the Helm Stable app catalog to be active...'
 rancher catalog refresh --wait --wait-timeout=0 helm
+
+# enable the bitnami app catalog.
+# NB this repository is not yet helm 3 compatible.
+#    see https://github.com/jenkinsci/helm-charts/issues/41
+# NB we must really use helm_v3 instead of v3.
+#    see https://github.com/rancher/rancher/issues/29079
+echo 'enabling the Bitnami app catalog...'
+rancher catalog add --helm-version helm_v3 bitnami https://charts.bitnami.com/bitnami
+echo 'waiting for the Jenkins app catalog to be active...'
+rancher catalog refresh --wait --wait-timeout=0 bitnami

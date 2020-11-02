@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euxo pipefail
 
 #
 # deploy the nfs-client-provisioner persistent NFS volume provider.
@@ -10,7 +10,7 @@ nfs_path='/var/nfs'
 nfs_client_provisioner_version="${1:-1.2.9}"; shift || true
 
 # switch to the System project.
-rancher context switch System
+rancher context switch "$(cat ~/.rancher-system-project-id)"
 
 # deploy the nfs-client-provisioner helm chart.
 # NB this creates the app inside the current rancher cli project (the one returned by rancher context current).
@@ -27,4 +27,4 @@ echo "waiting for the nfs-client-provisioner app to be active..."
 rancher wait --timeout=600 nfs-client-provisioner
 
 # switch back to the Default project.
-rancher context switch Default
+rancher context switch "$(cat ~/.rancher-default-project-id)"

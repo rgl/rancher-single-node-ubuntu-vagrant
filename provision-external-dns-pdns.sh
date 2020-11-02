@@ -1,12 +1,12 @@
 #!/bin/bash
-set -eu
+set -euxo pipefail
 
 pdns_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_domain="$(echo -n "$rancher_server_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 
 # switch to the System project.
-rancher context switch System
+rancher context switch "$(cat ~/.rancher-system-project-id)"
 
 # create the namespace.
 external_dns_namespace='external-dns-system'
@@ -28,4 +28,4 @@ $(
 EOF
 
 # switch back to the Default project.
-rancher context switch Default
+rancher context switch "$(cat ~/.rancher-default-project-id)"
