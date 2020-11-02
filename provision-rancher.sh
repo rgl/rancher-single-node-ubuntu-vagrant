@@ -6,10 +6,10 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain:8443"
 rancher_ip_address="${1:-10.1.0.3}"; shift || true
 admin_password="${1:-admin}"; shift || true
-rancher_version="${1:-v2.4.2}"; shift || true
+rancher_version="${1:-v2.4.8}"; shift || true
 rancher_cli_version="${1:-v2.4.0}"; shift || true
-k8s_version="${1:-v1.17.4-rancher1-2}"; shift || true
-kubectl_version="${1:-1.17.4-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+k8s_version="${1:-v1.18.6-rancher1-2}"; shift || true
+kubectl_version="${1:-1.18.6-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.3.4}"; shift # NB see https://github.com/kubernetes-sigs/krew
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 node_ip_address="$rancher_ip_address"
@@ -24,9 +24,9 @@ registry_password='vagrant'
 cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
 docker run -i --rm --name test debian:buster-slim cat /etc/resolv.conf
-kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -i --rm test cat /etc/resolv.conf
-kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/resolv.conf
-kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/nginx/nginx.conf | grep resolver
+kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -i --rm test -- cat /etc/resolv.conf
+kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) -- cat /etc/resolv.conf
+kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) -- cat /etc/nginx/nginx.conf | grep resolver
 kubectl --namespace ingress-nginx get pods
 # NB the backends, general, certs, and conf subcommands require ingress-nginx
 #    0.23.0+ BUT rancher 2.2.8 ships with 0.21.0.
@@ -265,6 +265,7 @@ kubeconfig_response="$(
         --header "Authorization: Bearer $admin_api_token" \
         "$rancher_server_url/v3/clusters/$cluster_id?action=generateKubeconfig")"
 install -d -m 700 ~/.kube
+install -m 600 /dev/null ~/.kube/config
 echo "$kubeconfig_response" | jq -r .config >~/.kube/config
 # also save the kubectl configuration on the host, so we can access it there.
 cp ~/.kube/config /vagrant/shared/admin.conf

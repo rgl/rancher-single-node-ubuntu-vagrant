@@ -29,7 +29,12 @@ while true; do
     # NB for some odd reason the redis password changes under our feets,
     #    so we always get it inside this loop.
     # TODO mount the secret inside the pod instead.
-    redis_image="$(kubectl get pod --namespace redis redis-master-0 -o jsonpath="{.spec.containers[?(@.name=='redis')].image}")"
+    redis_image="$(kubectl get pod --namespace redis redis-master-0 -o jsonpath="{.spec.containers[?(@.name=='redis')].image}" || true)"
+    if [ -z "$redis_image" ]; then
+        # for some odd reason, the pod is not yet running.
+        sleep 1
+        continue
+    fi
     redis_password="$(kubectl get secret --namespace redis redis -o jsonpath="{.data.redis-password}" | base64 --decode)"
     pong_response="$(
         kubectl run \
@@ -39,6 +44,7 @@ while true; do
             --env "REDISCLI_AUTH=$redis_password" \
             redis-client \
             --command sh -- -c 'redis-cli -h redis-master ping' \
+            || true \
             | grep PONG
         )"
     if [ "$pong_response" == "PONG" ]; then
