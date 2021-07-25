@@ -9,15 +9,15 @@ config_pandora_ip_address = '10.1.0.2'
 config_server_fqdn = 'server.rancher.test'
 config_server_ip_address = '10.1.0.3'
 config_admin_password = 'admin'
-config_docker_version = '5:19.03.13~3-0~ubuntu-focal' # NB execute apt-cache madison docker-ce to known the available versions.
-config_rancher_version = 'v2.5.1' # see https://github.com/rancher/rancher/releases
-config_rancher_cli_version = 'v2.4.7' # see https://github.com/rancher/cli/releases
-config_k8s_version = 'v1.19.3-rancher1-1'
-config_kubectl_version = '1.19.3-00' # NB execute apt-cache madison kubectl to known the available versions.
-config_krew_version = 'v0.4.0' # NB see https://github.com/kubernetes-sigs/krew
-config_metallb_helm_chart_version = '0.1.28' # see https://github.com/bitnami/charts/blob/master/bitnami/metallb/Chart.yaml
-config_metallb_ip_addresses = '10.1.0.10-10.1.0.20' # MetalLB will allocate IP addresses from this range.
-config_nfs_client_provisioner_version = '1.2.9' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
+config_docker_version = '20.10.7' # NB execute apt-cache madison docker-ce to known the available versions.
+config_rancher_version = 'v2.5.9' # see https://github.com/rancher/rancher/releases
+config_rancher_cli_version = 'v2.4.11' # see https://github.com/rancher/cli/releases
+config_k8s_version = 'v1.20.8-rancher1-1'
+config_kubectl_version = '1.20.0-00' # NB execute apt-cache madison kubectl to known the available versions.
+config_krew_version = 'v0.4.1' # NB see https://github.com/kubernetes-sigs/krew
+config_metallb_helm_chart_version = '2.4.5' # see https://github.com/bitnami/charts/blob/master/bitnami/metallb/Chart.yaml
+config_metallb_ip_addresses = '10.10.0.10-10.10.0.20' # MetalLB will allocate IP addresses from this range.
+config_nfs_client_provisioner_version = '4.0.12' # see https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases
 
 hosts = """
 127.0.0.1	localhost
@@ -153,8 +153,8 @@ Vagrant.configure(2) do |config|
       config_pandora_fqdn,
       config_nfs_client_provisioner_version,
     ]
-    config.vm.provision 'shell', inline: '/vagrant/examples/kubernetes-hello/build.sh "$*"', args: [config_pandora_fqdn]
-    config.vm.provision 'shell', inline: '/vagrant/examples/kubernetes-hello/deploy.sh'
+    config.vm.provision 'shell', inline: 'bash /vagrant/examples/kubernetes-hello/build.sh "$*"', args: [config_pandora_fqdn]
+    config.vm.provision 'shell', inline: 'bash /vagrant/examples/kubernetes-hello/deploy.sh'
     config.vm.provision 'shell', path: 'summary.sh', args: [
       config_pandora_fqdn,
     ]

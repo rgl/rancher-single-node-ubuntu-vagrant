@@ -5,7 +5,7 @@ set -euxo pipefail
 # deploy the MetalLB LoadBalancer.
 # see https://metallb.universe.tf/configuration/#layer-2-configuration
 
-config_metallb_helm_chart_version="${1:-0.1.28}"; shift || true
+config_metallb_helm_chart_version="${1:-2.4.5}"; shift || true
 metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
 
 # switch to the System project.

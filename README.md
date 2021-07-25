@@ -9,7 +9,7 @@ Install the [ubuntu-20.04-amd64](https://github.com/rgl/ubuntu-vagrant) box.
 Launch the environment:
 
 ```bash
-vagrant up --provider=libvirt # or --provider=virtualbox
+vagrant up --provider=libvirt --no-destroy-on-error # or --provider=virtualbox
 ```
 
 Configure your host DNS resolver to delegate the `rancher.test` domain to the `pandora` machine like described in this document. Or add the environment hosts to your machine `hosts` file:

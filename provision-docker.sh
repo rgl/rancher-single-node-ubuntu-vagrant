@@ -1,21 +1,27 @@
 #!/bin/bash
-set -eux
+set -euxo pipefail
 
-# NB execute apt-cache madison docker-ce to known the available versions.
-docker_version="${1:-5:19.03.13~3-0~ubuntu-focal}"; shift || true
+
+docker_version='20.10.7'
+
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:
 #     dpkg-preconfigure: unable to re-open stdin: No such file or directory
 export DEBIAN_FRONTEND=noninteractive
 
+# make sure the package index cache is up-to-date before installing anything.
+apt-get update
+
 # install docker.
-# see https://docs.docker.com/install/linux/docker-ce/ubuntu/
-apt-get install -y apt-transport-https software-properties-common gnupg2
+# see https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-using-the-repository
+apt-get install -y apt-transport-https software-properties-common
 wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
-apt-get install -y "docker-ce=$docker_version" "docker-ce-cli=$docker_version" containerd.io
+apt-cache madison docker-ce
+docker_apt_version="$(apt-cache madison docker-ce | awk "/$docker_version~/{print \$3}")"
+apt-get install -y "docker-ce=$docker_apt_version" "docker-ce-cli=$docker_apt_version" containerd.io
 
 # configure it.
 systemctl stop docker
@@ -23,6 +29,9 @@ cat >/etc/docker/daemon.json <<'EOF'
 {
     "experimental": false,
     "debug": false,
+    "features": {
+        "buildkit": true
+    },
     "log-driver": "journald",
     "labels": [
         "os=linux"

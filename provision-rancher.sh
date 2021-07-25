@@ -6,11 +6,11 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain:8443"
 rancher_ip_address="${1:-10.1.0.3}"; shift || true
 admin_password="${1:-admin}"; shift || true
-rancher_version="${1:-v2.5.1}"; shift || true
+rancher_version="${1:-v2.5.9}"; shift || true
 rancher_cli_version="${1:-v2.4.0}"; shift || true
-k8s_version="${1:-v1.19.3-rancher1-1}"; shift || true
-kubectl_version="${1:-1.19.3-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
-krew_version="${1:-v0.4.0}"; shift # NB see https://github.com/kubernetes-sigs/krew
+k8s_version="${1:-v1.20.8-rancher1-1}"; shift || true
+kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+krew_version="${1:-v0.4.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 node_ip_address="$rancher_ip_address"
 registry_host="$registry_domain:5000"
@@ -44,6 +44,8 @@ cp /vagrant/shared/tls/example-ca/$rancher_server_domain-key.pem /opt/rancher/ss
 # NB because we are launching rancher-agent with all roles we need to use
 #    non-standard ports for rancher server because the standard ones will
 #    be used by the ingress controller.
+# see https://rancher.com/docs/rancher/v2.5/en/installation/other-installation-methods/single-node-docker/
+# see https://rancher.com/docs/rancher/v2.5/en/installation/other-installation-methods/single-node-docker/advanced/
 echo "starting rancher..."
 install -d -m 700 /opt/rancher
 install -d -m 700 /opt/rancher/data
@@ -120,8 +122,8 @@ wget -qO- \
     "$rancher_server_url/v3/settings/telemetry-opt"
 
 # create the cluster.
-# NB this JSON can be obtained by observing the network when manually creating a cluster from the rancher UI,
-#    and more exactly using the schemas browser at https://server.rancher.test:8443/v3/schemas.
+# NB this JSON can be obtained by observing the network when manually creating a cluster from the rancher UI.
+#    NB also use the schemas browser at https://server.rancher.test:8443/v3/schemas.
 # NB to troubleshoot why the cluster provisioning is failing with something like:
 #       cluster c-fhrlt state: provisioning Failed to get job complete status for job rke-network-plugin-deploy-job in namespace kube-system
 #    execute:
@@ -145,20 +147,36 @@ cluster_response="$(wget -qO- \
     --header "Authorization: Bearer $admin_api_token" \
     --post-data '{
         "type": "cluster",
+        "name": "example",
+        "description": "hello world",
         "dockerRootDir": "/var/lib/docker",
+        "enableClusterAlerting": false,
+        "enableClusterMonitoring": false,
         "enableNetworkPolicy": false,
+        "windowsPreferedCluster": false,
         "rancherKubernetesEngineConfig": {
             "type": "rancherKubernetesEngineConfig",
             "kubernetesVersion": "'$k8s_version'",
-            "addonJobTimeout": 30,
+            "addonJobTimeout": 45,
             "ignoreDockerVersion": true,
+            "rotateEncryptionKey": false,
             "sshAgentAuth": false,
             "authentication": {
                 "type": "authnConfig",
                 "strategy": "x509"
             },
+            "dns": {
+                "type": "dnsConfig",
+                "nodelocal": {
+                    "type": "nodelocal",
+                    "ip_address": "",
+                    "node_selector": null,
+                    "update_strategy": {}
+                }
+            },
             "network": {
                 "type": "networkConfig",
+                "mtu": 0,
                 "plugin": "flannel",
                 "options": {
                     "flannel_backend_type": "host-gw",
@@ -167,19 +185,28 @@ cluster_response="$(wget -qO- \
             },
             "ingress": {
                 "type": "ingressConfig",
-                "provider": "nginx"
+                "provider": "nginx",
+                "defaultBackend": false,
+                "httpPort": 0,
+                "httpsPort": 0
             },
             "monitoring": {
                 "type": "monitoringConfig",
-                "provider": "metrics-server"
+                "provider": "metrics-server",
+                "replicas": 1
             },
             "services": {
                 "type": "rkeConfigServices",
                 "kubeApi": {
                     "type": "kubeAPIService",
+                    "alwaysPullImages": false,
                     "podSecurityPolicy": false,
                     "serviceClusterIpRange": "10.53.0.0/16",
-                    "serviceNodePortRange": "30000-32767"
+                    "serviceNodePortRange": "30000-32767",
+                    "secretsEncryptionConfig": {
+                        "enabled": false,
+                        "type": "secretsEncryptionConfig"
+                    }
                 },
                 "kubeController": {
                     "type": "kubeControllerService",
@@ -197,24 +224,48 @@ cluster_response="$(wget -qO- \
                         "heartbeat-interval": 500,
                         "election-timeout": 5000
                     },
+                    "gid": 0,
                     "retention": "72h",
                     "snapshot": false,
+                    "uid": 0,
                     "type": "etcdService",
                     "backupConfig": {
+                        "type": "backupConfig",
                         "enabled": true,
                         "intervalHours": 12,
                         "retention": 6,
-                        "type": "backupConfig"
+                        "safeTimestamp": false,
+                        "timeout": 300
                     }
                 }
+            },
+            "upgradeStrategy": {
+                "maxUnavailableControlplane": "1",
+                "maxUnavailableWorker": "10%",
+                "drain": "false",
+                "nodeDrainInput": {
+                    "deleteLocalData": false,
+                    "force": false,
+                    "gracePeriod": -1,
+                    "ignoreDaemonSets": true,
+                    "timeout": 120,
+                    "type": "nodeDrainInput"
+                },
+                "maxUnavailableUnit": "percentage"
             }
         },
         "localClusterAuthEndpoint": {
             "enabled": true,
             "type": "localClusterAuthEndpoint"
         },
-        "name": "example",
-        "description": "hello world"
+        "labels": {},
+        "annotations": {},
+        "agentEnvVars": [],
+        "scheduledClusterScan": {
+            "enabled": false,
+            "scheduleConfig": null,
+            "scanConfig": null
+        }
     }' \
     "$rancher_server_url/v3/cluster")"
 
@@ -356,18 +407,17 @@ docker login $registry_host --username "$registry_username" --password-stdin <<E
 $registry_password
 EOF
 
-# enable the helm stable app catalog.
-echo 'enabling the Helm Stable app catalog...'
-rancher catalog add --branch master helm https://kubernetes-charts.storage.googleapis.com/
-echo 'waiting for the Helm Stable app catalog to be active...'
-rancher catalog refresh --wait --wait-timeout=0 helm
+# enable the nfs-subdir-external-provisioner app catalog.
+# see https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+echo 'enabling the nfs-subdir-external-provisioner app catalog...'
+rancher catalog add --helm-version helm_v3 nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+echo 'waiting for the nfs-subdir-external-provisioner app catalog to be active...'
+rancher catalog refresh --wait --wait-timeout=0 nfs-subdir-external-provisioner
 
 # enable the bitnami app catalog.
-# NB this repository is not yet helm 3 compatible.
-#    see https://github.com/jenkinsci/helm-charts/issues/41
 # NB we must really use helm_v3 instead of v3.
 #    see https://github.com/rancher/rancher/issues/29079
 echo 'enabling the Bitnami app catalog...'
 rancher catalog add --helm-version helm_v3 bitnami https://charts.bitnami.com/bitnami
-echo 'waiting for the Jenkins app catalog to be active...'
+echo 'waiting for the Bitnami app catalog to be active...'
 rancher catalog refresh --wait --wait-timeout=0 bitnami
