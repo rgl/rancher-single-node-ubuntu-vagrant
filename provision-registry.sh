@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+source /vagrant/lib.sh
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 registry_host="$registry_domain:5000"

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 ip_address="${1:-10.10.0.2}"; shift || true
 ip_network="${1:-10.10.0.3/24}"; shift || true

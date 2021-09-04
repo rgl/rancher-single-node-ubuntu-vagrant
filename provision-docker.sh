@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+source /vagrant/lib.sh
 
 
 docker_version='20.10.8'

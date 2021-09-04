@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+source /vagrant/lib.sh
 
 #
 # deploy the nfs-subdir-external-provisioner persistent NFS volume provider.
