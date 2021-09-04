@@ -9,13 +9,26 @@ config_pandora_ip_address = '10.10.0.2'
 config_server_fqdn = 'server.rancher.test'
 config_server_ip_address = '10.10.0.3'
 config_admin_password = 'admin'
-config_docker_version = '20.10.7' # NB execute apt-cache madison docker-ce to known the available versions.
-config_rancher_version = 'v2.5.9' # see https://github.com/rancher/rancher/releases
-config_rancher_cli_version = 'v2.4.11' # see https://github.com/rancher/cli/releases
-config_k8s_version = 'v1.20.8-rancher1-1'
-config_kubectl_version = '1.20.0-00' # NB execute apt-cache madison kubectl to known the available versions.
+config_docker_version = '20.10.8' # NB execute apt-cache madison docker-ce to known the available versions.
+config_rancher_version = 'v2.6.0' # see https://github.com/rancher/rancher/releases
+config_rancher_cli_version = 'v2.4.12' # see https://github.com/rancher/cli/releases
+# set the example cluster kubernetes version.
+# NB the rancher (local) cluster kubernetes version cannot be set as its
+#    bundled with the rancher version defined with config_rancher_version.
+# see https://releases.rancher.com/kontainer-driver-metadata/release-v2.6/data.json
+#     NB this data.json file is defined by the rke-metadata-config setting in
+#        the rancher global settings page at:
+#        https://server.rancher.test:8443/dashboard/c/local/settings/management.cattle.io.setting
+# see https://raw.githubusercontent.com/rancher/kontainer-driver-metadata/release-v2.6/data/data.json
+#     jq '.K8sVersionRKESystemImages | keys' data.json # for rke1. e.g. v1.21.4-rancher1-1
+#     jq '.rke2.releases[].version' data.json          # for rke2. e.g. v1.21.4+rke2r2
+#     jq '.k3s.releases[].version' data.json           # for k3s.  e.g. v1.21.4+k3s1
+#     NB because provision-rancher.sh is deploying a RKE1 example cluster, you
+#        MUST use a version of it here too.
+config_k8s_version = 'v1.21.4-rancher1-1'
+config_kubectl_version = config_k8s_version.gsub(/v([\.\d]+).+/, '\1')
 config_krew_version = 'v0.4.1' # NB see https://github.com/kubernetes-sigs/krew
-config_metallb_helm_chart_version = '2.4.5' # see https://github.com/bitnami/charts/blob/master/bitnami/metallb/Chart.yaml
+config_metallb_helm_chart_version = '2.5.4' # see https://github.com/bitnami/charts/blob/master/bitnami/metallb/Chart.yaml
 config_metallb_ip_addresses = '10.10.0.10-10.10.0.20' # MetalLB will allocate IP addresses from this range.
 config_nfs_client_provisioner_version = '4.0.13' # see https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases
 
