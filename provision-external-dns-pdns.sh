@@ -14,8 +14,8 @@ echo "creating the $external_dns_namespace namespace..."
 rancher namespace create $external_dns_namespace
 
 # install the PowerDNS external-dns provider.
-# see https://github.com/kubernetes-incubator/external-dns/blob/master/docs/tutorials/pdns.md
-# see https://github.com/kubernetes-incubator/external-dns/blob/master/docs/initial-design.md
+# see https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/pdns.md
+# see https://github.com/kubernetes-sigs/external-dns/blob/master/docs/initial-design.md
 rancher kubectl apply --namespace "$external_dns_namespace" -f - <<EOF
 $(
     cat /vagrant/external-dns-pdns.yaml \
