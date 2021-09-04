@@ -4,7 +4,7 @@ set -eu
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain:8443"
-rancher_ip_address="${1:-10.1.0.3}"; shift || true
+rancher_ip_address="${1:-10.10.0.3}"; shift || true
 admin_password="${1:-admin}"; shift || true
 rancher_version="${1:-v2.5.9}"; shift || true
 rancher_cli_version="${1:-v2.4.0}"; shift || true

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eux
 
-ip_address="${1:-10.1.0.2}"; shift || true
-ip_network="${1:-10.1.0.3/24}"; shift || true
+ip_address="${1:-10.10.0.2}"; shift || true
+ip_network="${1:-10.10.0.3/24}"; shift || true
 
 #
 # provision the NFS server.

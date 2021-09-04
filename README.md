@@ -15,8 +15,8 @@ vagrant up --provider=libvirt --no-destroy-on-error # or --provider=virtualbox
 Configure your host DNS resolver to delegate the `rancher.test` domain to the `pandora` machine like described in this document. Or add the environment hosts to your machine `hosts` file:
 
 ```plain
-10.1.0.2 pandora.rancher.test
-10.1.0.3 server.rancher.test
+10.10.0.2 pandora.rancher.test
+10.10.0.3 server.rancher.test
 ```
 
 Access the rancher server at https://server.rancher.test:8443 and login with the default `admin` username and password.
@@ -43,7 +43,7 @@ Create the required virtual switches:
 ```bash
 PowerShell -NoLogo -NoProfile -ExecutionPolicy Bypass <<'EOF'
 @(
-  @{Name='rancher'; IpAddress='10.1.0.1'}
+  @{Name='rancher'; IpAddress='10.10.0.1'}
 ) | ForEach-Object {
   $switchName = $_.Name
   $switchIpAddress = $_.IpAddress
@@ -77,17 +77,17 @@ Make sure that all of the following commands return the IP address of our `pando
 ```bash
 vagrant ssh server
 sudo su -l
-docker run -i --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.1.0.2
+docker run -i --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.10.0.2
 kubectl --namespace ingress-nginx \
     exec \
     $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \
     -- \
-    cat /etc/resolv.conf # => nameserver 10.1.0.2
+    cat /etc/resolv.conf # => nameserver 10.10.0.2
 kubectl --namespace ingress-nginx \
     exec \
     $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \
     -- \
-    cat /etc/nginx/nginx.conf | grep resolver # => resolver 10.1.0.2 valid=30s;
+    cat /etc/nginx/nginx.conf | grep resolver # => resolver 10.10.0.2 valid=30s;
 ```
 
 ## Host DNS resolver
@@ -125,7 +125,7 @@ bind-interfaces
 interface=lo
 listen-address=127.0.0.1
 # delegate the rancher.test zone to the pandora DNS server IP address.
-server=/rancher.test/10.1.0.2
+server=/rancher.test/10.10.0.2
 # delegate to the Cloudflare/APNIC Public DNS IP addresses.
 # NB iif there's no entry in /etc/hosts.
 server=1.1.1.1

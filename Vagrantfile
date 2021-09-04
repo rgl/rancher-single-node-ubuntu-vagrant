@@ -5,9 +5,9 @@ ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 ENV['VAGRANT_EXPERIMENTAL'] = 'typed_triggers'
 
 config_pandora_fqdn = 'pandora.rancher.test'
-config_pandora_ip_address = '10.1.0.2'
+config_pandora_ip_address = '10.10.0.2'
 config_server_fqdn = 'server.rancher.test'
-config_server_ip_address = '10.1.0.3'
+config_server_ip_address = '10.10.0.3'
 config_admin_password = 'admin'
 config_docker_version = '20.10.7' # NB execute apt-cache madison docker-ce to known the available versions.
 config_rancher_version = 'v2.5.9' # see https://github.com/rancher/rancher/releases

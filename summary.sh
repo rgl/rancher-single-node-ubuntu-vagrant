@@ -44,7 +44,7 @@ kubectl get-all
 
 # kubernetes contexts.
 # NB the example context gives you indirect access to the rke cluster api-server endpoint (e.g. https://server.rancher.test:8443/k8s/clusters/c-g5282).
-# NB the example-server context gives you direct access to the rke cluster api-server endpoint (e.g. https://10.1.0.3:6443).
+# NB the example-server context gives you direct access to the rke cluster api-server endpoint (e.g. https://10.10.0.3:6443).
 kubectl config get-contexts
 
 # show the kubernetes system arguments.

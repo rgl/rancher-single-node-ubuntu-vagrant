@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux
 
-dns_server_ip_address="${1:-10.1.0.2}"; shift || true
+dns_server_ip_address="${1:-10.10.0.2}"; shift || true
 
 # change the dns resolver to use our dns server.
 cat >/etc/netplan/01-netcfg.yaml <<EOF
