@@ -275,21 +275,24 @@ cluster_response="$(wget -qO- \
 
 # register this node as a rancher-agent.
 echo "getting the rancher-agent registration command..."
-cluster_id="$(echo "$cluster_response" | jq -r .id)"
-cluster_registration_token_response="$(
-    wget -qO- \
-        --header 'Content-Type: application/json' \
-        --header "Authorization: Bearer $admin_api_token" \
-        --post-data '{"type":"clusterRegistrationToken","clusterId":"'$cluster_id'"}' \
-        "$rancher_server_url/v3/clusterregistrationtoken")"
-cluster_registration_token_url="$(echo "$cluster_registration_token_response" | jq -r .links.self)"
+cluster_id="$(jq -r .id <<<"$cluster_response")"
+while true; do
+    cluster_registration_token_response="$(
+        wget -qO- \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $admin_api_token" \
+            --post-data '{"type":"clusterRegistrationToken","clusterId":"'$cluster_id'"}' \
+            "$rancher_server_url/v3/clusterregistrationtoken" || true)"
+    [ -n "$cluster_registration_token_response" ] && break || sleep 5
+done
+cluster_registration_token_url="$(jq -r .links.self <<<"$cluster_registration_token_response")"
 cluster_registration_response="$(
     wget -qO- \
         --header 'Content-Type: application/json' \
         --header "Authorization: Bearer $admin_api_token" \
         "$cluster_registration_token_url")"
 rancher_agent_registration_command="
-    $(echo "$cluster_registration_response" | jq -r .nodeCommand)
+    $(jq -r .nodeCommand <<<"$cluster_registration_response")
         --address $node_ip_address
         --internal-address $node_ip_address
         --etcd
