@@ -7,7 +7,7 @@ set -euxo pipefail
 
 nfs_server="${1:-pandora.rancher.test}"; shift || true
 nfs_path='/var/nfs'
-nfs_client_provisioner_version="${1:-4.0.12}"; shift || true
+nfs_client_provisioner_version="${1:-4.0.13}"; shift || true
 
 # switch to the System project.
 rancher context switch "$(cat ~/.rancher-system-project-id)"

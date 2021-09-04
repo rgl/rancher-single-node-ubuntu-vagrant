@@ -17,7 +17,7 @@ config_kubectl_version = '1.20.0-00' # NB execute apt-cache madison kubectl to k
 config_krew_version = 'v0.4.1' # NB see https://github.com/kubernetes-sigs/krew
 config_metallb_helm_chart_version = '2.4.5' # see https://github.com/bitnami/charts/blob/master/bitnami/metallb/Chart.yaml
 config_metallb_ip_addresses = '10.10.0.10-10.10.0.20' # MetalLB will allocate IP addresses from this range.
-config_nfs_client_provisioner_version = '4.0.12' # see https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases
+config_nfs_client_provisioner_version = '4.0.13' # see https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases
 
 hosts = """
 127.0.0.1	localhost
